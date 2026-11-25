@@ -1,0 +1,1167 @@
+<title>Tư duy Quay lui</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday learning: calm, exact, a patient teacher; fourth page of the Recursion / DP / Greedy series
+   IDEA the same metro map: solving a backtracking problem is a line of eight questions; each answer fills one slot of a fixed code skeleton
+   PICTURE the decision tree you must draw yourself; live trees, a stepper that undoes, a 4-queens board that backs out of dead rows
+   COLOUR white ground, black ink; red = thinking line, blue = pattern line, green = practice / answers, amber = the call running now
+   TYPE Be Vietnam Pro 800 + Be Vietnam Pro, Roboto Mono for code, tree labels and state
+   LAYOUT title and conclusion on top, map full width; every section hangs off a thick left rail */
+:root{--bg:#ffffff;--ink:#111418;--mute:#566070;--line:#dfe3e8;--soft:#f3f5f8;--red:#e6261f;--blue:#0a5cff;--green:#00a05a;--amber:#ffb400;--mono:"Roboto Mono",ui-monospace,Menlo,monospace;--pl:76px;--rx:24px;--rw:10px;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--ink:#eceff3;--mute:#9ba5b5;--line:#2a313c;--soft:#161b23;--blue:#5b93ff;--green:#22c47c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1116;--ink:#eceff3;--mute:#9ba5b5;--line:#2a313c;--soft:#161b23;--blue:#5b93ff;--green:#22c47c;color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:76px;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Be Vietnam Pro",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(4vw,16px);padding-right:max(4vw,16px)}
+h1,h2,h3{font-weight:800;letter-spacing:-.02em;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px);max-width:22ch}
+h2{font-size:clamp(25px,3vw,32px);margin-bottom:16px;max-width:34ch}
+h3{font-size:19px;margin:28px 0 8px;letter-spacing:-.01em}
+p,ul,ol{max-width:70ch}
+p{margin:0 0 14px}
+a{color:inherit}
+code{font-family:var(--mono);font-size:.9em;background:var(--soft);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.cap{font-size:14px;color:var(--mute)}
+header.hero{padding-block:44px 8px}
+.lede{font-size:19px;max-width:66ch;margin:18px 0 6px}
+.fig{position:relative}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.map{height:410px;margin:8px 0 4px}
+@media(max-width:1039px){.map{height:780px}}
+svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+.stn{cursor:pointer}
+.stn:focus{outline:none}
+.stn:focus-visible circle{stroke:var(--amber)}
+nav.jump{position:relative;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.jump .scroll{display:flex;gap:6px;padding:10px 0;white-space:nowrap}
+nav.jump a{flex:none;text-decoration:none;font-size:14px;font-weight:600;padding:6px 12px 6px 10px;border-radius:99px;border:1px solid var(--line);display:inline-flex;align-items:center;gap:7px}
+nav.jump a::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c,var(--red))}
+nav.jump a:hover{border-color:var(--ink)}
+@media(min-width:900px){nav.jump{position:sticky;top:env(safe-area-inset-top,0px)}}
+.scroll{overflow-x:auto}
+pre{overflow-x:auto}
+.st{position:relative;padding:44px 0 36px var(--pl);--c:var(--red)}
+.st::before{content:"";position:absolute;left:var(--rx);top:0;bottom:0;width:var(--rw);background:var(--c)}
+.st>h2{position:relative}
+.st>h2::before{content:"";position:absolute;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 15px);top:calc(.55em - 15px);width:30px;height:30px;border-radius:50%;background:var(--bg);border:7px solid var(--c);box-sizing:border-box}
+.st.x>h2::before{border-color:var(--ink);width:36px;height:36px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 18px);top:calc(.55em - 18px)}
+.st.blue{--c:var(--blue)}
+.st.green{--c:var(--green)}
+.st.first::before{top:52px}
+.st.last::before{bottom:auto;height:60px}
+.line-name{font-size:14px;font-weight:700;color:var(--c);margin:0 0 6px}
+@media(max-width:600px){:root{--pl:46px;--rx:12px;--rw:7px}.st>h2::before{width:24px;height:24px;border-width:6px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 12px);top:calc(.55em - 12px)}.st.x>h2::before{width:28px;height:28px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 14px);top:calc(.55em - 14px)}}
+.key{background:var(--soft);border-radius:14px;padding:18px 22px;margin:20px 0;max-width:76ch}
+.key>strong:first-child{display:block;font-size:17px;margin-bottom:4px}
+.key p:last-child,.key ol:last-child,.key ul:last-child{margin-bottom:0}
+.eq{font-family:var(--mono);font-size:16px;background:var(--soft);padding:14px 18px;border-radius:12px;overflow-x:auto;white-space:nowrap;margin:14px 0;max-width:76ch}
+.eq b{color:var(--red);font-weight:600}
+.ask{font-weight:700;font-size:19px;background:var(--soft);padding:14px 18px;border-radius:12px;margin:14px 0;max-width:76ch;border-left:6px solid var(--c)}
+.panel{border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0}
+figure{margin:20px 0}
+figcaption{font-size:14px;color:var(--mute);margin-top:10px;max-width:70ch}
+.svgbox{overflow-x:auto}
+.svgbox svg{display:block;width:100%;height:auto;margin:0 auto}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media(max-width:900px){.two{grid-template-columns:minmax(0,1fr);gap:0}}
+.frtwo{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:28px;align-items:start}
+@media(max-width:900px){.frtwo{grid-template-columns:minmax(0,1fr)}}
+.frtwo h3{margin-top:0;font-size:17px}
+ul.sig{list-style:none;padding:0;margin:12px 0}
+ul.sig li{position:relative;padding-left:28px;margin:8px 0}
+ul.sig li::before{content:"";position:absolute;left:2px;top:.45em;width:14px;height:14px;border-radius:50%;border:4px solid var(--c,var(--red));box-sizing:border-box}
+table.tbl{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0}
+.tbl th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;border-bottom:2px solid var(--ink);padding:8px 10px 8px 0}
+.tbl td{border-bottom:1px solid var(--line);padding:10px 10px 10px 0;vertical-align:top}
+.tbl td:first-child{font-weight:700}
+.tbl code{white-space:nowrap}
+.codewrap{position:relative;margin:14px 0;max-width:84ch}
+.codewrap pre{background:var(--soft);border-radius:12px;padding:16px 18px;margin:0;font:14.5px/1.6 var(--mono)}
+.codewrap .copy{position:absolute;top:8px;right:8px;font:600 13px "Be Vietnam Pro",sans-serif;min-height:32px;padding:4px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.codewrap .lbl{font-size:14px;font-weight:700;margin:0 0 6px}
+.kw{color:var(--blue);font-weight:600}
+.codewrap code i{font-style:normal;color:var(--red)}
+.cm{color:var(--mute);font-style:italic}
+.say{font:16px/1.55 "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:3.2em;margin:12px 0;padding:10px 14px;border-radius:10px;background:var(--soft);overflow-wrap:anywhere}
+.say b{color:var(--red)}
+.ctl,.tog{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tog{margin-bottom:10px}
+.tog .tl{font-size:14px;font-weight:700;color:var(--mute);margin-right:4px}
+.ctl button,.tog button{font:600 15px "Be Vietnam Pro",sans-serif;min-height:44px;padding:8px 16px;border-radius:22px;border:2px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer}
+.ctl button.pri{background:var(--ink);color:var(--bg)}
+.ctl button:disabled{opacity:.3;cursor:default}
+.tog button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.ctl button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--mute);margin:10px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:20px;height:16px;border-radius:4px;display:inline-block;border:2px solid var(--ink)}
+.sw.run{background:var(--amber);border-color:var(--amber)}
+.sw.ans{background:var(--green);border-color:var(--green)}
+.sw.dup{background:var(--red);border-color:var(--red)}
+.sw.dead{border:2px dashed var(--red)}
+.sw.ghost{border:2px dashed var(--mute);opacity:.6}
+.sw.faint{opacity:.3}
+.sw.path{height:5px;border:0;background:var(--blue);border-radius:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;font:14px var(--mono)}
+.chips span{padding:4px 9px;border-radius:8px;border:2px solid var(--line)}
+.chips .p{border-color:var(--blue)}
+.chips .r{background:var(--green);border-color:var(--green);color:#fff}
+.chips .d{background:var(--red);border-color:var(--red);color:#fff;text-decoration:line-through}
+.chips .r.new{outline:3px solid var(--amber);outline-offset:1px}
+.mini{font-size:14px;font-weight:700;color:var(--mute);margin:0 0 6px}
+.stats{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:15px;margin:6px 0 4px}
+.stats b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin-right:6px}
+.codehl{background:var(--soft);border-radius:12px;padding:14px 0;font:14px/1.75 var(--mono);overflow-x:auto;margin:0}
+.codehl .ln{display:block;padding:0 16px;white-space:pre}
+.codehl .ln.on{background:color-mix(in srgb,var(--amber) 38%,transparent)}
+.cs{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start;margin-top:12px}
+@media(max-width:760px){.cs{grid-template-columns:minmax(0,1fr)}}
+.kv{font:14.5px/1.8 var(--mono);margin:0 0 12px;font-variant-numeric:tabular-nums}
+.kv span{color:var(--mute)}
+.slots{background:var(--soft);border-radius:14px;padding:12px 0;margin:18px 0;max-width:900px;overflow-x:auto}
+.sl{display:grid;grid-template-columns:minmax(0,1fr) 11.5em;gap:14px;align-items:center;padding:2px 16px}
+.sl code{background:none;padding:0;font:14.5px/1.7 var(--mono);white-space:pre;overflow-wrap:normal}
+.sl code i{font-style:normal;color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent);border-radius:4px;padding:0 4px}
+.sl a{justify-self:start;font-size:13px;font-weight:700;text-decoration:none;border-radius:99px;padding:2px 10px;border:2px solid var(--red);color:var(--red);white-space:nowrap}
+.sl a:hover{background:var(--red);color:#fff}
+@media(max-width:700px){.sl{grid-template-columns:minmax(0,1fr);gap:0}.sl a{margin:0 0 6px}}
+dl.card{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:8px 16px;margin:16px 0;max-width:80ch;padding:16px 20px;border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:4px 14px 14px 4px}
+dl.card dt{font-weight:700;font-size:14px;color:var(--blue);padding-top:2px}
+dl.card dd{margin:0}
+@media(max-width:600px){dl.card{grid-template-columns:minmax(0,1fr);gap:2px}dl.card dd{margin-bottom:8px}}
+.nq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:760px){.nq{grid-template-columns:minmax(0,1fr)}}
+.diag{display:flex;flex-wrap:wrap;gap:28px;margin:14px 0}
+.diag svg{width:220px;max-width:100%;height:auto}
+.route{list-style:none;padding:0;margin:18px 0;position:relative;max-width:80ch}
+.route>li{position:relative;padding:0 0 24px 40px}
+.route>li::before{content:"";position:absolute;left:9px;top:8px;bottom:-8px;width:6px;background:var(--green)}
+.route>li:last-child::before{display:none}
+.route>li::after{content:"";position:absolute;left:0;top:2px;width:24px;height:24px;border-radius:50%;background:var(--bg);border:6px solid var(--green);box-sizing:border-box}
+.route strong{display:block}
+.route .pb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.route .pb span{font-size:14px;border:1px solid var(--line);border-radius:8px;padding:2px 9px}
+footer{border-top:1px solid var(--line);padding-block:22px 40px;font-size:14px;color:var(--mute)}
+@media(max-width:600px){table{font-size:13px}th,td{padding:6px 4px}.stack thead{display:none}.stack tr{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0 3px 8.5em;text-align:left;font-size:14px}.stack td::before{content:attr(data-l);float:left;width:8em;margin-left:-8.5em;color:var(--mute);font-weight:600;font-size:13px;line-height:1.35;padding-top:2px}.stack td:first-child{padding-left:0;font-size:15px}.stack td:first-child::before{display:none}.lede{font-size:17px}.eq{font-size:14px}.ask{font-size:17px}}
+</style>
+
+<header class="hero wrap">
+  <h1>Tư duy Quay lui: vẽ cây quyết định trước, code chỉ là đi bộ trên nó</h1>
+  <p class="lede">Bị tắc ở bài quay lui hiếm khi là do code: code của mọi bài quay lui có <strong>cùng một khung</strong>, chỉ khác nhau ở sáu chỗ trống. Người ta tắc vì chưa trả lời được <strong>cái cây mình đang duyệt trông như thế nào</strong>. Tám ga dưới đây là tám câu hỏi. Trả lời lần lượt, bạn vẽ được cây; vẽ được cây, bạn điền được khung.</p>
+  <div class="fig map"><svg id="map" role="img" aria-label="Bản đồ tuyến tư duy quay lui: tám ga trên tuyến đỏ, tuyến xanh rẽ từ ga Tầng quyết định tới sáu mẫu bài, tuyến đen rẽ từ ga Kiểm tra sang Quy hoạch động"></svg></div>
+  <p class="cap">Bấm vào một ga để tới phần đó. Đây là bài thứ tư trong chuỗi, nên đọc sau <a href="https://claude.ai/artifact/LQTpPV711cGXiymRS4iKY9">Tư duy Đệ quy</a> (nhất là ý “hợp đồng và tin tưởng”), đi cùng <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Tư duy Quy hoạch động</a> và <a href="https://claude.ai/artifact/N6u6foS9ex5Qd96VnVidJ3">Tư duy Tham lam</a>. Code mẫu viết bằng Swift, bài tập đánh số theo LeetCode.</p>
+</header>
+
+<nav class="jump" aria-label="Mục lục"><div class="wrap"><div class="scroll">
+  <a href="#ban-chat">Bản chất</a><a href="#loi-giai">Lời giải</a><a href="#tang">Tầng quyết định</a><a href="#trang-thai">Trạng thái</a><a href="#ghi-nhan">Ghi nhận</a><a href="#hoan-tac">Hoàn tác</a><a href="#cat-tia">Cắt tỉa</a><a href="#khu-trung">Khử trùng</a><a href="#kiem-tra">Kiểm tra</a>
+  <a href="#to-hop" style="--c:var(--blue)">Tổ hợp</a><a href="#hoan-vi" style="--c:var(--blue)">Hoán vị</a><a href="#cat-chuoi" style="--c:var(--blue)">Cắt chuỗi</a><a href="#dat-o" style="--c:var(--blue)">Đặt vào ô</a><a href="#luoi" style="--c:var(--blue)">Đi trên lưới</a><a href="#chia-nhom" style="--c:var(--blue)">Chia nhóm</a><a href="#bang-tra" style="--c:var(--blue)">Bảng tra</a>
+  <a href="#bi-ket" style="--c:var(--green)">Khi bị kẹt</a><a href="#lo-trinh" style="--c:var(--green)">Lộ trình</a><a href="#mau" style="--c:var(--green)">Mẫu suy luận</a>
+</div></div></nav>
+
+<main class="wrap">
+
+<!-- ============ BẢN CHẤT ============ -->
+<section class="st first" id="ban-chat">
+  <p class="line-name">Tuyến tư duy · ga xuất phát</p>
+  <h2>Quay lui là đi bộ trên một cái cây mà bạn phải tự vẽ ra</h2>
+  <p>Hình dung bạn đi trong mê cung, tay cầm cuộn chỉ. Tới ngã rẽ, chọn một lối và đi tiếp. Gặp ngõ cụt, cuộn chỉ lại tới ngã rẽ gần nhất và thử lối chưa đi. Bạn không cần nhớ cả mê cung: chỉ cần nhớ <strong>đường đang đi</strong> (sợi chỉ) và <strong>ở mỗi ngã rẽ đã thử lối nào</strong>.</p>
+  <p>Mọi bài quay lui đều là mê cung này, với một khác biệt: không ai vẽ sẵn mê cung cho bạn. Các ngã rẽ là những <strong>quyết định</strong> do chính bạn đặt ra. Đặt quyết định khác đi, mê cung khác đi.</p>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 760 316" style="min-width:600px" role="img" aria-label="Cây quyết định: gốc chưa quyết định gì, mỗi cạnh là một lựa chọn, lá xanh là đáp án, lá đỏ là ngõ cụt, một nhánh bị cắt tỉa, mũi tên quay lui từ ngõ cụt lên node cha">
+      <defs><marker id="ahK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--ink)"/></marker></defs>
+      <g stroke-width="2" fill="none" style="stroke:var(--ink)" stroke-opacity=".5">
+        <line x1="380" y1="36" x2="180" y2="116"/><line x1="380" y1="36" x2="380" y2="116"/>
+        <line x1="180" y1="116" x2="110" y2="196"/><line x1="180" y1="116" x2="250" y2="196"/>
+        <line x1="250" y1="196" x2="210" y2="272"/><line x1="250" y1="196" x2="290" y2="272"/>
+        <line x1="380" y1="116" x2="340" y2="196"/><line x1="380" y1="116" x2="420" y2="196"/>
+      </g>
+      <g stroke-width="2" fill="none" stroke-dasharray="5 5" style="stroke:var(--mute)" stroke-opacity=".6">
+        <line x1="380" y1="36" x2="600" y2="116"/><line x1="600" y1="116" x2="560" y2="196"/><line x1="600" y1="116" x2="640" y2="196"/><line x1="560" y1="196" x2="530" y2="272"/><line x1="560" y1="196" x2="590" y2="272"/><line x1="640" y1="196" x2="670" y2="272"/>
+      </g>
+      <g stroke-width="5" fill="none" style="stroke:var(--blue)" stroke-linecap="round"><line x1="380" y1="36" x2="180" y2="116"/><line x1="180" y1="116" x2="250" y2="196"/><line x1="250" y1="196" x2="290" y2="272"/></g>
+      <g stroke-width="3" style="fill:var(--bg);stroke:var(--ink)"><circle cx="380" cy="36" r="15"/><circle cx="180" cy="116" r="15"/><circle cx="380" cy="116" r="15"/><circle cx="250" cy="196" r="15"/></g>
+      <g stroke-width="3" style="fill:var(--green);stroke:var(--green)"><circle cx="110" cy="196" r="15"/><circle cx="290" cy="272" r="15"/><circle cx="420" cy="196" r="15"/></g>
+      <g stroke-width="3" stroke-dasharray="4 3" style="fill:var(--bg);stroke:var(--red)"><circle cx="210" cy="272" r="15"/><circle cx="340" cy="196" r="15"/></g>
+      <g stroke-width="2" stroke-dasharray="4 4" style="fill:var(--bg);stroke:var(--mute)" opacity=".55"><circle cx="600" cy="116" r="15"/><circle cx="560" cy="196" r="13"/><circle cx="640" cy="196" r="13"/><circle cx="530" cy="272" r="11"/><circle cx="590" cy="272" r="11"/><circle cx="670" cy="272" r="11"/></g>
+      <g font-size="16" font-weight="800" text-anchor="middle" style="fill:var(--red)"><text x="210" y="278">✕</text><text x="340" y="202">✕</text></g>
+      <g font-size="15" font-weight="800" text-anchor="middle" fill="#fff" style="stroke:none"><text x="110" y="201">✓</text><text x="290" y="277">✓</text><text x="420" y="201">✓</text></g>
+      <path d="M198 262 Q160 226 238 206" fill="none" stroke-width="2.5" stroke-dasharray="6 4" style="stroke:var(--ink)" marker-end="url(#ahK)"/>
+      <text x="492" y="88" font-size="22" text-anchor="middle" style="fill:var(--red)">✂</text>
+      <g font-size="13" fill="currentColor">
+        <text x="402" y="40">gốc: chưa quyết định gì</text>
+        <text x="272" y="68" text-anchor="end">lựa chọn 1</text><text x="388" y="84">lựa chọn 2</text>
+        <text x="512" y="70" style="fill:var(--red)" font-weight="700">cắt tỉa: biết trước là hỏng</text>
+        <text x="158" y="120" text-anchor="end" opacity=".8">node = lời giải dang dở</text>
+        <text x="110" y="226" text-anchor="middle" font-weight="700" style="fill:var(--green)">đáp án</text>
+        <text x="340" y="226" text-anchor="middle" font-weight="700" style="fill:var(--red)">ngõ cụt</text>
+        <text x="420" y="226" text-anchor="middle" font-weight="700" style="fill:var(--green)">đáp án</text>
+        <text x="210" y="304" text-anchor="middle" font-weight="700" style="fill:var(--red)">ngõ cụt</text>
+        <text x="290" y="304" text-anchor="middle" font-weight="700" style="fill:var(--green)">đáp án</text>
+        <text x="150" y="250" text-anchor="end" font-weight="800">quay lui</text><text x="150" y="266" text-anchor="end" opacity=".8">hoàn tác, thử lối kế</text>
+        <text x="600" y="304" text-anchor="middle" opacity=".8">cả cây con bị bỏ, không tốn lời gọi nào</text>
+      </g>
+    </svg></div>
+    <figcaption>Đường xanh là “sợi chỉ” lúc tìm thấy đáp án ở đáy: chính là <code>path</code> trong code. Mũi tên đứt là lúc gặp ngõ cụt, cuộn chỉ về node cha rồi thử lựa chọn kế tiếp.</figcaption>
+  </figure>
+  <div class="two">
+    <div>
+      <p>Mỗi phần của hình có đúng một phần tương ứng trong code:</p>
+      <div class="scroll"><table class="tbl">
+        <thead><tr><th>Trên cây</th><th>Trong code</th></tr></thead>
+        <tbody>
+          <tr><td>một node</td><td>một lời gọi <code>backtrack(trạng thái)</code></td></tr>
+          <tr><td>một cạnh</td><td>một vòng lặp của <code>for</code>: một lựa chọn</td></tr>
+          <tr><td>độ sâu</td><td>số quyết định đã đưa ra</td></tr>
+          <tr><td>lá xanh</td><td>điểm dừng có ghi nhận đáp án</td></tr>
+          <tr><td>lá đỏ</td><td><code>return</code> mà không ghi gì</td></tr>
+          <tr><td>đi lên một cạnh</td><td><code>return</code> + hoàn tác</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <div class="key" style="margin-top:0"><strong>Nguyên tắc vàng của cả tài liệu</strong><p><strong>Vẽ cây trước, viết code sau.</strong> Lấy input nhỏ nhất có ít nhất hai đáp án và vẽ hai, ba tầng đầu của cây ra giấy. Vẽ được thì code chỉ còn là dịch hình vẽ. Bị tắc khi viết code gần như luôn có nghĩa là chưa vẽ được cây.</p></div>
+      <p>So với đệ quy thường, quay lui chỉ thêm đúng một việc: khi đi lên một cạnh, trả mọi thứ về <strong>y như trước khi đi xuống cạnh đó</strong>. Đó là “cuộn chỉ lại”, và là nguồn gốc của cái tên.</p>
+    </div>
+  </div>
+  <h3>Một khung code, sáu chỗ trống</h3>
+  <p>Đây là khung chung của mọi lời giải quay lui. Chữ đỏ là chỗ trống; nhãn bên phải là ga trả lời chỗ trống đó.</p>
+  <div class="slots" role="group" aria-label="Khung code quay lui và các ga tương ứng">
+    <div class="sl"><code>func backtrack(<i>trạng thái</i>) {</code><a href="#trang-thai">Trạng thái</a></div>
+    <div class="sl"><code>    if <i>node này là đáp án</i> { <i>ghi nhận</i>; return }</code><a href="#ghi-nhan">Ghi nhận</a></div>
+    <div class="sl"><code>    for c in <i>các lựa chọn ở tầng này</i> {</code><a href="#tang">Tầng quyết định</a></div>
+    <div class="sl"><code>        if <i>c chắc chắn hỏng</i> { continue }</code><a href="#cat-tia">Cắt tỉa</a></div>
+    <div class="sl"><code>        if <i>c lặp lại một nhánh anh em</i> { continue }</code><a href="#khu-trung">Khử trùng</a></div>
+    <div class="sl"><code>        <i>chọn c</i>                        // sửa trạng thái</code><a href="#hoan-tac">Hoàn tác</a></div>
+    <div class="sl"><code>        backtrack(<i>trạng thái sau khi chọn c</i>)</code><span></span></div>
+    <div class="sl"><code>        <i>bỏ chọn c</i>                     // trả trạng thái về cũ</code><a href="#hoan-tac">Hoàn tác</a></div>
+    <div class="sl"><code>    }</code><span></span></div>
+    <div class="sl"><code>}</code><span></span></div>
+  </div>
+  <p>Hai ga còn lại không có chỗ trống riêng mà quyết định mọi chỗ trống khác: <a href="#loi-giai">Lời giải</a> (đáp án trông ra sao) đứng trước tất cả, và <a href="#kiem-tra">Kiểm tra</a> đứng sau tất cả.</p>
+  <div class="key"><strong>Bài ví dụ cho cả tuyến đỏ: Combination Sum (LeetCode 39)</strong><p>Cho <code>candidates = [2, 3, 6, 7]</code> (các số khác nhau) và <code>target = 7</code>. Liệt kê mọi tổ hợp có tổng đúng bằng target. Mỗi số được dùng bao nhiêu lần cũng được; hai tổ hợp chỉ khác thứ tự coi là một. Đáp án: <code>[2, 2, 3]</code> và <code>[7]</code>.</p></div>
+</section>
+
+<!-- ============ LỜI GIẢI ============ -->
+<section class="st" id="loi-giai">
+  <h2>Lời giải: cầm một đáp án trong tay, hỏi nó được dựng bằng chuỗi quyết định nào</h2>
+  <p>Trước khi nghĩ tới đệ quy, nhìn vào <strong>đầu ra</strong>. Viết ra một đáp án cụ thể cho input nhỏ, ví dụ <code>[2, 2, 3]</code>, rồi hỏi ba câu. Ba câu trả lời quyết định gần hết code:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Câu hỏi</th><th>Combination Sum</th><th>Hệ quả cho code</th></tr></thead>
+    <tbody>
+      <tr><td>Thứ tự trong đáp án có ý nghĩa không?</td><td>Không: <code>[2,2,3]</code> và <code>[3,2,2]</code> là một</td><td>Phải sinh theo một thứ tự chuẩn, nếu không sẽ ra đáp án trùng (ga <a href="#tang">Tầng quyết định</a>)</td></tr>
+      <tr><td>Một phần tử dùng được mấy lần?</td><td>Không giới hạn</td><td>Sau khi chọn <code>cs[i]</code>, gọi tiếp với <code>i</code> chứ không phải <code>i + 1</code></td></tr>
+      <tr><td>Khi nào đáp án “đủ”?</td><td>Khi tổng bằng target; độ dài không cố định</td><td>Điều kiện ghi nhận là <code>remain == 0</code> (ga <a href="#ghi-nhan">Ghi nhận</a>)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Làm tương tự với các bài kinh điển. Để ý cột thứ hai: mọi đáp án đều được viết thành <strong>một dãy</strong>.</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Bài</th><th>Một đáp án, viết thành dãy</th><th>Thứ tự có nghĩa?</th><th>Độ dài</th></tr></thead>
+    <tbody>
+      <tr><td>Subsets (78), <code>[1,2,3]</code></td><td><code>[1, 3]</code></td><td>không</td><td>0 tới n</td></tr>
+      <tr><td>Permutations (46)</td><td><code>[3, 1, 2]</code></td><td>có</td><td>đúng n</td></tr>
+      <tr><td>Combinations (77), n=4, k=2</td><td><code>[1, 4]</code></td><td>không</td><td>đúng k</td></tr>
+      <tr><td>N-Queens (51), n=4</td><td>cột của quân hậu ở từng hàng: <code>[1, 3, 0, 2]</code></td><td>có: vị trí i là hàng i</td><td>đúng n</td></tr>
+      <tr><td>Palindrome Partitioning (131), <code>"aab"</code></td><td>các đoạn liền nhau: <code>["aa", "b"]</code></td><td>có</td><td>thay đổi</td></tr>
+      <tr><td>Word Search (79)</td><td>các ô kề nhau đọc ra word</td><td>có</td><td>đúng word.count</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Một đáp án = một dãy quyết định = một đường đi từ gốc xuống</strong><p>Khi viết được đáp án thành dãy (x₁, x₂, …, x<sub>k</sub>), mỗi x<sub>i</sub> là một tầng của cây. Nhiều đầu ra trông không giống dãy (một bàn cờ, một cách chia chuỗi). Việc đầu tiên là <strong>mã hoá nó thành dãy</strong>: bàn cờ thành “cột của mỗi hàng”, cách chia chuỗi thành “các đoạn theo thứ tự từ trái sang”.</p></div>
+  <p>Cách mã hoá tốt loại bỏ cấu hình sai trước khi bạn viết dòng kiểm tra nào. Với N-Queens 4×4:</p>
+  <div class="eq">chọn 4 ô bất kỳ trong 16 ô          → C(16, 4) = <b>1820</b> cấu hình<br>mỗi hàng một quân: dãy cột [c₀..c₃]  → 4⁴      = <b>256</b>   (tự đúng luật hàng)<br>thêm: các cột khác nhau             → 4!      = <b>24</b>    (tự đúng luật cột)</div>
+  <p>Hai lần đổi cách mã hoá đã bỏ đi 98,7% cấu hình, chưa cần cắt tỉa gì. <strong>Chọn cách mã hoá là cắt tỉa miễn phí.</strong></p>
+</section>
+
+<!-- ============ TẦNG QUYẾT ĐỊNH ============ -->
+<section class="st x" id="tang">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang tuyến mẫu</p>
+  <h2>Tầng quyết định: đứng ở một node, tôi đang trả lời câu hỏi nào, và có những câu trả lời nào?</h2>
+  <p>Đây là ga người ta tắc nhiều nhất, vì <strong>cùng một bài có nhiều cách đặt câu hỏi</strong>, và mỗi cách cho ra một cây khác hẳn. Có hai góc nhìn gốc:</p>
+  <ul class="sig">
+    <li><strong>Duyệt theo input</strong>: mỗi tầng là một phần tử của input, câu hỏi là “phần tử này: lấy hay bỏ?” (hoặc “vào nhóm nào?”). Cây sâu đúng n tầng; đáp án nằm ở lá.</li>
+    <li><strong>Duyệt theo output</strong>: mỗi tầng là một vị trí của đáp án, câu hỏi là “phần tử tiếp theo của đáp án là gì?”. Số nhánh bằng số ứng viên còn được phép; đáp án có thể nằm ở mọi node.</li>
+  </ul>
+  <figure>
+    <div class="frtwo">
+      <div><h3>Duyệt theo input: “lấy hay bỏ?”</h3><div class="svgbox" id="fr-a"></div></div>
+      <div><h3>Duyệt theo output: “số tiếp theo?”</h3><div class="svgbox" id="fr-b"></div></div>
+    </div>
+    <figcaption>Hai cây cho Subsets của <code>[1, 2, 3]</code>. Cây trái có 15 node, chỉ 8 lá là đáp án. Cây phải có 8 node, node nào cũng là một tập con. Cả hai đều đúng: ở cây phải, sau khi chọn 2 chỉ được chọn tiếp 3, nên không bao giờ sinh ra {2, 1}.</figcaption>
+  </figure>
+  <p>Áp dụng góc nhìn thứ hai cho Combination Sum một cách ngây thơ: “số tiếp theo là số nào trong [2, 3, 6, 7]?”. Bấm qua lại hai nút để so sánh. Nhãn trong mỗi node là phần tổng còn thiếu; nhãn trên cạnh là số vừa chọn.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Cách đặt câu hỏi ở mỗi tầng" id="fc-mode"><span class="tl">Ở mỗi tầng</span><button type="button" data-m="any" aria-pressed="true">Chọn bất kỳ số nào</button><button type="button" data-m="start" aria-pressed="false">Chỉ chọn từ start trở đi</button></div>
+    <div class="svgbox" id="fc-tree"></div>
+    <p class="mini" style="margin-top:12px">result</p><div class="chips" id="fc-res"></div>
+    <p class="say" id="fc-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw ans"></i>đáp án</span><span><i class="sw dup"></i>đáp án trùng</span><span><i class="sw dead"></i>ngõ cụt: còn thiếu nhưng không số nào vừa</span></div>
+    <p class="cap" style="margin:8px 0 0">Để hình gọn, hai cây chỉ vẽ các lựa chọn không vượt quá phần còn thiếu.</p>
+  </div>
+  <div class="key"><strong>Đáp án không phân biệt thứ tự → chỉ sinh nó theo một thứ tự chuẩn</strong><p>Cây phân biệt <code>2 → 2 → 3</code> với <code>3 → 2 → 2</code>, còn đề thì không. Cách rẻ nhất để bắt cây “quên” thứ tự: chỉ cho chọn ứng viên có chỉ số <strong>≥ chỉ số vừa chọn</strong>. Tham số <code>start</code> chính là lời nhắn “các lối bên trái ngã rẽ này đã được thử ở nhánh anh em rồi, đừng quay lại”. Dùng lại được thì truyền <code>i</code>, mỗi phần tử một lần thì truyền <code>i + 1</code>.</p></div>
+  <p>Câu hỏi bạn đặt ở mỗi tầng chính là thứ quyết định mẫu bài. Sáu câu hỏi dưới đây phủ gần hết các bài quay lui bạn sẽ gặp; mỗi câu là một ga trên tuyến xanh:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Câu hỏi ở mỗi tầng</th><th>Lựa chọn</th><th>Mẫu</th></tr></thead>
+    <tbody>
+      <tr><td>Phần tử tiếp theo, chỉ lấy về phía sau?</td><td>chỉ số từ <code>start</code> tới cuối</td><td><a href="#to-hop">Tổ hợp</a></td></tr>
+      <tr><td>Phần tử tiếp theo, bất kỳ cái nào chưa dùng?</td><td>mọi chỉ số có <code>!used[i]</code></td><td><a href="#hoan-vi">Hoán vị</a></td></tr>
+      <tr><td>Đoạn tiếp theo kết thúc ở đâu?</td><td>vị trí cắt từ <code>start</code> tới cuối</td><td><a href="#cat-chuoi">Cắt chuỗi</a></td></tr>
+      <tr><td>Ô (hàng) này đặt giá trị gì?</td><td>mọi giá trị không phạm luật</td><td><a href="#dat-o">Đặt vào ô</a></td></tr>
+      <tr><td>Bước tiếp theo đi hướng nào?</td><td>các ô kề chưa nằm trên đường</td><td><a href="#luoi">Đi trên lưới</a></td></tr>
+      <tr><td>Phần tử này vào nhóm nào?</td><td>các nhóm còn chỗ</td><td><a href="#chia-nhom">Chia nhóm</a></td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Khi không biết đặt câu hỏi thế nào</strong><p>Phác cả hai góc nhìn cho input nhỏ, mỗi cái hai tầng. Chọn cái có <strong>ít nhánh hơn</strong> và cho phép <strong>kiểm tra ràng buộc sớm hơn</strong>. Gặp chữ “tập con”, “chọn/không chọn” → thường là duyệt theo input. Gặp chữ “sắp xếp”, “thứ tự”, “điền vào” → thường là duyệt theo output.</p></div>
+</section>
+
+<!-- ============ TRẠNG THÁI ============ -->
+<section class="st" id="trang-thai">
+  <h2>Trạng thái: những gì về quá khứ mà tương lai còn cần</h2>
+  <p class="ask">“Để biết lựa chọn nào còn hợp lệ ở node này, và khi nào đã xong, tôi cần nhớ gì về các quyết định đã đưa ra?”</p>
+  <p>Không cần nhớ cả quá khứ, chỉ cần phần ảnh hưởng tới tương lai. Với Combination Sum:</p>
+  <ul class="sig">
+    <li><code>path</code>: các số đã chọn. Chỉ dùng để in ra đáp án.</li>
+    <li><code>start</code>: chỉ số nhỏ nhất còn được chọn, để giữ thứ tự chuẩn.</li>
+    <li><code>remain = target − tổng(path)</code>: biết khi nào đủ và khi nào đã vượt. Mang theo <code>remain</code> thay vì tính lại <code>path.reduce(0, +)</code> ở mỗi node: O(1) thay vì O(độ dài path).</li>
+  </ul>
+  <p>Trạng thái chia làm hai loại, và chúng cư xử khác nhau khi lời gọi trả về:</p>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 760 246" style="min-width:600px" role="img" aria-label="Bên trái: ba khung stack, mỗi khung giữ một giá trị remain riêng. Bên phải: ba khung cùng trỏ vào một biến path dùng chung">
+      <defs><marker id="ahM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--blue)"/></marker></defs>
+      <text x="20" y="24" font-size="15" font-weight="800" fill="currentColor">Tham số: start, remain</text>
+      <rect x="20" y="40" width="310" height="40" rx="9" stroke-width="2" style="fill:var(--amber);stroke:var(--amber)"/>
+      <rect x="20" y="90" width="310" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <rect x="20" y="140" width="310" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <g font-family="Roboto Mono,monospace" font-size="14" font-weight="600"><text x="36" y="65" fill="#111" style="stroke:none">explore(0, 3)   remain = 3</text><text x="36" y="115" fill="currentColor">explore(0, 5)   remain = 5</text><text x="36" y="165" fill="currentColor">explore(0, 7)   remain = 7</text></g>
+      <g font-size="13" fill="currentColor"><text x="20" y="208">Mỗi khung giữ một bản riêng. Khung trên bị gỡ thì</text><text x="20" y="226">khung dưới vẫn thấy remain = 5: <tspan font-weight="700" style="fill:var(--green)">tự hoàn tác</tspan>.</text></g>
+      <text x="400" y="24" font-size="15" font-weight="800" fill="currentColor">Biến dùng chung: path</text>
+      <rect x="400" y="40" width="180" height="40" rx="9" stroke-width="2" style="fill:var(--amber);stroke:var(--amber)"/>
+      <rect x="400" y="90" width="180" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <rect x="400" y="140" width="180" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <g font-family="Roboto Mono,monospace" font-size="14" font-weight="600"><text x="416" y="65" fill="#111" style="stroke:none">explore(0, 3)</text><text x="416" y="115" fill="currentColor">explore(0, 5)</text><text x="416" y="165" fill="currentColor">explore(0, 7)</text></g>
+      <g stroke-width="2.5" fill="none" style="stroke:var(--blue)"><path d="M582 60 L636 100" marker-end="url(#ahM)"/><path d="M582 110 L634 110" marker-end="url(#ahM)"/><path d="M582 160 L636 122" marker-end="url(#ahM)"/></g>
+      <rect x="640" y="80" width="106" height="60" rx="10" stroke-width="3" style="fill:var(--bg);stroke:var(--blue)"/>
+      <text x="693" y="102" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--blue)">path</text>
+      <text x="693" y="126" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="15" font-weight="600" fill="currentColor">[2, 2]</text>
+      <g font-size="13" fill="currentColor"><text x="400" y="208">Một bản cho mọi khung: lời gọi con sửa gì, khung cha</text><text x="400" y="226">thấy nấy. Phải <tspan font-weight="700" style="fill:var(--red)">removeLast() bằng tay</tspan> trước khi trả về.</text></g>
+    </svg></div>
+    <figcaption>Khung màu vàng là lời gọi đang chạy. Số nguyên truyền qua tham số không bao giờ cần hoàn tác; mảng, tập hợp, bàn cờ dùng chung thì luôn cần.</figcaption>
+  </figure>
+  <p>Trạng thái của các bài kinh điển:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Bài</th><th>Trạng thái</th><th>Phần nào để làm gì</th></tr></thead>
+    <tbody>
+      <tr><td>Subsets, Combinations</td><td><code>path</code>, <code>start</code></td><td><code>start</code> giữ thứ tự chuẩn</td></tr>
+      <tr><td>Permutations</td><td><code>path</code>, <code>used[]</code></td><td>biết số nào còn rảnh, kiểm tra O(1)</td></tr>
+      <tr><td>N-Queens</td><td><code>row</code>, tập <code>cols</code>, <code>r − c</code>, <code>r + c</code></td><td>kiểm tra ô an toàn trong O(1) thay vì quét cả bàn</td></tr>
+      <tr><td>Palindrome Partitioning</td><td><code>start</code>, <code>path</code></td><td>phần còn lại cần cắt là <code>s[start...]</code></td></tr>
+      <tr><td>Word Search</td><td><code>(r, c)</code>, <code>k</code>, các ô đang nằm trên đường</td><td>không đi lại ô của chính đường này</td></tr>
+      <tr><td>Partition K Subsets</td><td><code>i</code>, tổng hiện tại của k nhóm</td><td>biết nhóm nào còn chỗ</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Trạng thái tối thiểu nhưng đủ</strong><p>Thiếu thì không kiểm tra được ràng buộc nhanh (phải quét lại <code>path</code> mỗi node). Thừa thì thêm việc hoàn tác và thêm chỗ để sai. Một tín hiệu đặc biệt: nếu kết quả ở một node chỉ phụ thuộc vào phần trạng thái nhỏ như <code>(start, remain)</code> mà không phụ thuộc vào <code>path</code>, bài có thể giải bằng Quy hoạch động (ga <a href="#kiem-tra">Kiểm tra</a>).</p></div>
+</section>
+
+<!-- ============ GHI NHẬN ============ -->
+<section class="st" id="ghi-nhan">
+  <h2>Ghi nhận: node nào là đáp án, node nào là ngõ cụt, và đề muốn gì từ chúng</h2>
+  <p>Có ba chỗ đặt dòng ghi nhận, tuỳ hình dạng đáp án ở ga Lời giải:</p>
+  <ul class="sig">
+    <li><strong>Ở lá có độ sâu cố định</strong>: Permutations (<code>path.count == n</code>), N-Queens (<code>row == n</code>). Ghi rồi <code>return</code>.</li>
+    <li><strong>Ở mọi node</strong>: Subsets theo góc nhìn output. Mỗi node là một tập con, nên ghi ngay khi vào hàm và <em>không</em> <code>return</code>: {1} là đáp án, {1, 2} bên dưới nó cũng vậy.</li>
+    <li><strong>Khi đạt mục tiêu</strong>: Combination Sum (<code>remain == 0</code>). Ghi rồi <code>return</code>, vì thêm số dương nào cũng làm tổng vượt.</li>
+  </ul>
+  <p>Ngõ cụt là node không phải đáp án và không còn lựa chọn hợp lệ: <code>remain &lt; 0</code>, hoặc còn thiếu 1 mà số nhỏ nhất là 2. Ở đó chỉ <code>return</code>.</p>
+  <p>Đề hỏi gì thì hàm trả về nấy. Cùng một cây, bốn kiểu câu hỏi cho bốn cách viết:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Đề hỏi</th><th>Hàm trả về</th><th>Khi gặp đáp án</th><th>Ví dụ</th></tr></thead>
+    <tbody>
+      <tr><td>Liệt kê tất cả</td><td>không gì, ghi vào <code>result</code></td><td>ghi, <code>return</code>, đi tiếp các nhánh khác</td><td>39, 46, 51</td></tr>
+      <tr><td>Có tồn tại không / tìm một</td><td><code>Bool</code></td><td><code>return true</code>; người gọi thấy <code>true</code> thì trả <code>true</code> ngay, không thử thêm</td><td>79, 37, 698</td></tr>
+      <tr><td>Đếm số đáp án</td><td><code>Int</code></td><td><code>return 1</code>; mỗi node cộng kết quả các con</td><td>52</td></tr>
+      <tr><td>Tốt nhất</td><td>không gì, cập nhật <code>best</code></td><td>so với <code>best</code>; dùng <code>best</code> để cắt tỉa nhánh khác</td><td>1723</td></tr>
+    </tbody>
+  </table></div>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Khung cho “có tồn tại không”</p><pre class="plain"><code>func dfs(<i>trạng thái</i>) -&gt; Bool {
+    if <i>đủ</i> { return true }
+    for c in <i>lựa chọn</i> {
+        <i>chọn c</i>
+        if dfs(<i>trạng thái mới</i>) { return true }  // lan truyền lên tận gốc
+        <i>bỏ chọn c</i>
+    }
+    return false
+}</code></pre></div>
+    <div>
+      <p>Lời gọi đầu tiên tìm thấy đáp án sẽ trả <code>true</code>, và mọi khung phía dưới nó trên stack lần lượt trả <code>true</code> theo, không ai thử thêm lựa chọn nào. Cây được duyệt tới đúng chỗ cần thiết rồi dừng.</p>
+      <p>Lưu ý: nhánh <code>return true</code> bỏ qua bước hoàn tác. Với Sudoku đó là điều mong muốn (bàn cờ giữ nguyên lời giải). Nếu sau đó còn dùng lại trạng thái, hoàn tác trước khi trả về.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOÀN TÁC ============ -->
+<section class="st" id="hoan-tac">
+  <h2>Chọn, khám phá, hoàn tác: mỗi lời gọi trả trạng thái về đúng như lúc nhận</h2>
+  <p>Viết hợp đồng cho hàm, như trong bài Đệ quy:</p>
+  <p class="ask" style="font-weight:500;font-size:17px"><code>explore(start, remain)</code> sinh mọi cách mở rộng <code>path</code> hiện tại thành đáp án, chỉ dùng các số từ vị trí <code>start</code> trở đi, với phần tổng thêm đúng bằng <code>remain</code>; ghi từng cách vào <code>result</code>; và <strong>khi trả về, <code>path</code> y nguyên như lúc nhận</strong>.</p>
+  <p>Mệnh đề cuối là thứ cho phép bạn tin tưởng lời gọi con. Sau khi nó trả về, bạn đứng đúng chỗ cũ với <code>path</code> sạch, sẵn sàng thử lựa chọn kế tiếp. Xem cỗ máy giữ lời hứa đó trên toàn bộ cây (lần này không cắt tỉa gì, để thấy cả các ngõ cụt):</p>
+  <div class="panel">
+    <div class="svgbox" id="ht-tree"></div>
+    <div class="cs">
+      <pre class="codehl" id="ht-code"><span class="ln">func explore(_ start: Int, _ remain: Int) {</span><span class="ln">    if remain &lt; 0 { return }               // ngõ cụt</span><span class="ln">    if remain == 0 {                       // đủ tổng</span><span class="ln">        result.append(path); return        // ghi nhận</span><span class="ln">    }</span><span class="ln">    for i in start..&lt;cs.count {</span><span class="ln">        path.append(cs[i])                 // chọn</span><span class="ln">        explore(i, remain - cs[i])         // khám phá</span><span class="ln">        path.removeLast()                  // hoàn tác</span><span class="ln">    }</span><span class="ln">}</span></pre>
+      <div>
+        <p class="mini">Trạng thái tại lời gọi đang chạy</p>
+        <div class="kv" id="ht-kv"></div>
+        <p class="mini">path (dùng chung, như một stack)</p><div class="chips" id="ht-path"></div>
+        <p class="mini" style="margin-top:12px">result</p><div class="chips" id="ht-res"></div>
+      </div>
+    </div>
+    <p class="say" id="ht-say" aria-live="polite"></p>
+    <div class="ctl" id="ht-ctl"></div>
+    <div class="legend"><span><i class="sw run"></i>lời gọi đang chạy</span><span><i class="sw path"></i>đường từ gốc tới lời gọi đang chạy = path</span><span><i class="sw ans"></i>đáp án</span><span><i class="sw dead"></i>ngõ cụt</span><span><i class="sw faint"></i>chưa gọi tới</span></div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="key" style="margin-top:0"><strong>Chọn và hoàn tác là một cặp ngoặc</strong><p>Mọi thay đổi trên trạng thái dùng chung trước lời gọi đệ quy phải có một thao tác ngược ngay sau lời gọi, theo thứ tự ngược lại:</p>
+        <p style="font-family:var(--mono);font-size:14.5px;line-height:1.8">append(x) ↔ removeLast()<br>used[i] = true ↔ used[i] = false<br>cols.insert(c) ↔ cols.remove(c)<br>board[r][c] = "#" ↔ board[r][c] = saved<br>sums[j] += x ↔ sums[j] -= x</p></div>
+    </div>
+    <div>
+      <div class="codewrap" style="margin-top:0"><p class="lbl">Lỗi kinh điển: return nằm giữa cặp ngoặc</p><pre><code>path.append(x)
+if path.count == k {
+    result.append(path)
+    return                 // SAI: path vẫn còn x
+}
+explore(i + 1)
+path.removeLast()</code></pre></div>
+      <p>Cách an toàn: đặt mọi kiểm tra “đã là đáp án chưa” ở <strong>đầu hàm</strong>, trước khi chọn gì. Giữa <code>chọn</code> và <code>bỏ chọn</code> chỉ có một lời gọi đệ quy.</p>
+    </div>
+  </div>
+  <p><strong>Hoàn tác miễn phí khi mới tập:</strong> truyền trạng thái mới qua tham số, ví dụ <code>explore(i, remain - cs[i], path + [cs[i]])</code>. Mỗi lời gọi tốn thêm O(độ dài path) để sao chép, nhưng bạn không thể quên hoàn tác. Khi đã chắc tay, chuyển về biến dùng chung cho nhanh.</p>
+  <p><strong>Swift sao chép giúp bạn khi ghi đáp án:</strong> mảng là kiểu giá trị, nên <code>result.append(path)</code> lưu một bản sao. Trong Java hay Python phải viết <code>new ArrayList&lt;&gt;(path)</code> hay <code>path[:]</code>, nếu không mọi đáp án đã lưu sẽ bị lần hoàn tác sau đó làm hỏng.</p>
+</section>
+
+<!-- ============ CẮT TỈA ============ -->
+<section class="st" id="cat-tia">
+  <h2>Cắt tỉa: trả lời câu hỏi của lá sớm nhất có thể</h2>
+  <p>Ở cây vừa chạy, phần lớn lời gọi chỉ để phát hiện “đã vượt target”. Nhưng câu đó trả lời được ngay ở node cha, trước khi gọi: nếu <code>cs[i] &gt; remain</code> thì đừng đi. Và vì <code>candidates</code> đã sắp xếp tăng dần, mọi số sau <code>cs[i]</code> còn lớn hơn: <code>break</code>, không chỉ <code>continue</code>.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Cắt tỉa" id="pr-mode"><span class="tl">Cây</span><button type="button" data-m="off" aria-pressed="true">Không cắt tỉa</button><button type="button" data-m="on" aria-pressed="false">Sắp xếp + break</button></div>
+    <div class="stats" id="pr-stat"></div>
+    <div class="svgbox" id="pr-tree"></div>
+    <p class="say" id="pr-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw ans"></i>đáp án</span><span><i class="sw dead"></i>ngõ cụt</span><span><i class="sw ghost"></i>bị cắt: không bao giờ được gọi</span></div>
+  </div>
+  <div class="codewrap"><p class="lbl">Combination Sum, bản hoàn chỉnh</p><pre><code>func combinationSum(_ candidates: [Int], _ target: Int) -&gt; [[Int]] {
+    let cs = candidates.sorted()
+    var result: [[Int]] = [], path: [Int] = []
+    func explore(_ start: Int, _ remain: Int) {
+        if remain == 0 { result.append(path); return }
+        for i in start..&lt;cs.count {
+            if cs[i] &gt; remain { break }         // cắt tỉa: các số sau còn lớn hơn
+            path.append(cs[i])                  // chọn
+            explore(i, remain - cs[i])          // khám phá (i: được dùng lại)
+            path.removeLast()                   // hoàn tác
+        }
+    }
+    explore(0, target)
+    return result
+}</code></pre></div>
+  <p>Ở ví dụ này các nhánh bị cắt đều là lá, nên chỉ tiết kiệm từng lời gọi một. Cắt tỉa thật sự đáng giá khi phát hiện được nhánh chết <strong>ở gần gốc</strong>:</p>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 680 230" style="min-width:520px" role="img" aria-label="Hai tam giác cây: cắt ở lá chỉ bỏ một node, cắt ở tầng 1 bỏ cả một cây con lớn">
+      <polygon points="170,22 40,180 300,180" stroke-width="2" style="fill:var(--soft);stroke:var(--ink)" stroke-opacity=".5"/>
+      <circle cx="170" cy="22" r="8" stroke-width="3" style="fill:var(--bg);stroke:var(--ink)"/>
+      <circle cx="268" cy="180" r="8" stroke-width="3" stroke-dasharray="3 2" style="fill:var(--bg);stroke:var(--red)"/>
+      <text x="268" y="166" text-anchor="middle" font-size="18" style="fill:var(--red)">✂</text>
+      <text x="170" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">Cắt ở lá: bỏ được 1 lời gọi</text>
+      <polygon points="510,22 380,180 640,180" stroke-width="2" style="fill:var(--soft);stroke:var(--ink)" stroke-opacity=".5"/>
+      <polygon points="578,66 532,180 624,180" stroke-width="2.5" stroke-dasharray="6 4" style="fill:var(--bg);stroke:var(--red)"/>
+      <line x1="510" y1="22" x2="578" y2="66" stroke-width="3" style="stroke:var(--ink)"/>
+      <circle cx="510" cy="22" r="8" stroke-width="3" style="fill:var(--bg);stroke:var(--ink)"/>
+      <circle cx="578" cy="66" r="8" stroke-width="3" stroke-dasharray="3 2" style="fill:var(--bg);stroke:var(--red)"/>
+      <text x="560" y="40" font-size="20" style="fill:var(--red)">✂</text>
+      <text x="578" y="140" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--red)">không gọi</text><text x="578" y="157" text-anchor="middle" font-size="13" font-weight="700" style="fill:var(--red)">node nào</text>
+      <text x="510" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">Cắt ở tầng 1: bỏ cả cây con</text>
+    </svg></div>
+    <figcaption>Cây có độ sâu d và b nhánh mỗi node: cắt một nhánh ở tầng 1 bỏ đi khoảng b<sup>d−1</sup> lời gọi. Vì vậy mỗi kiểm tra bạn định làm ở lá, hãy hỏi: có làm được sớm hơn không?</figcaption>
+  </figure>
+  <p>Năm kiểu cắt tỉa hay gặp, kèm câu hỏi để tìm ra chúng:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Kiểu</th><th>Câu hỏi tự đặt</th><th>Ví dụ</th></tr></thead>
+    <tbody>
+      <tr><td>Vi phạm ràng buộc</td><td>Lựa chọn này đã phá luật chưa?</td><td>quân hậu bị ăn; <code>remain &lt; 0</code>; chuỗi con không đối xứng</td></tr>
+      <tr><td>Sắp xếp rồi break</td><td>Nếu lựa chọn này đã quá lớn, các lựa chọn sau có còn tệ hơn không?</td><td>Combination Sum I, II, III</td></tr>
+      <tr><td>Không đủ để hoàn thành</td><td>Phần còn lại có đủ nguyên liệu để thành đáp án không?</td><td>Combinations: còn <code>n − i + 1</code> số mà cần <code>k − path.count</code> số; Restore IP: còn quá nhiều hoặc quá ít chữ số</td></tr>
+      <tr><td>Cận (bound)</td><td>Kết quả tốt nhất có thể từ đây có vượt được <code>best</code> không?</td><td>bài tối ưu: phân việc (1723)</td></tr>
+      <tr><td>Thử cái khó trước</td><td>Lựa chọn nào dễ dẫn tới thất bại nhất? Thử trước để chết sớm.</td><td>Sudoku: điền ô ít lựa chọn nhất trước; chia nhóm: xếp số lớn trước</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Cẩn thận với <code>break</code></strong><p><code>break</code> chỉ đúng khi mọi lựa chọn phía sau chắc chắn tệ hơn, tức là sau khi đã sắp xếp. Chưa sắp xếp mà <code>break</code> sẽ âm thầm mất đáp án. Không chắc thì dùng <code>continue</code>: chậm hơn một chút nhưng không bao giờ sai.</p></div>
+</section>
+
+<!-- ============ KHỬ TRÙNG ============ -->
+<section class="st" id="khu-trung">
+  <h2>Khử trùng: khi input có phần tử giống nhau, hai nhánh anh em mọc ra cùng một cây con</h2>
+  <p><strong>Subsets II (90):</strong> <code>nums = [1, 2, 2]</code>. Hai số 2 là hai phần tử khác nhau của mảng (gọi là 2 và 2′), nhưng đáp án chỉ nhìn giá trị. Cây theo góc nhìn output sinh {2} hai lần và {1, 2} hai lần.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Khử trùng" id="dd-mode"><span class="tl">Cây</span><button type="button" data-m="off" aria-pressed="true">Không khử trùng</button><button type="button" data-m="on" aria-pressed="false">Sắp xếp + bỏ qua ở cùng tầng</button></div>
+    <div class="svgbox" id="dd-tree"></div>
+    <p class="mini" style="margin-top:12px">result</p><div class="chips" id="dd-res"></div>
+    <p class="say" id="dd-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw ans"></i>tập con mới</span><span><i class="sw dup"></i>tập con trùng</span><span><i class="sw ghost"></i>nhánh bị bỏ qua</span></div>
+  </div>
+  <div class="key"><strong>Cùng tầng thì bỏ, cùng nhánh thì giữ</strong><p>Ở <strong>cùng một node</strong> (cùng một vòng <code>for</code>), mỗi giá trị chỉ được thử một lần: nhánh “+2′” mọc ra y hệt cây con của nhánh “+2” đứng ngay bên trái nó. Nhưng <strong>đi sâu xuống</strong> trên cùng một nhánh, giá trị lặp lại vẫn hợp lệ: {2, 2′} là một đáp án thật.</p></div>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func subsetsWithDup(_ nums: [Int]) -&gt; [[Int]] {
+    let a = nums.sorted()              // giá trị bằng nhau đứng cạnh nhau
+    var result: [[Int]] = [], path: [Int] = []
+    func explore(_ start: Int) {
+        result.append(path)            // mọi node là một tập con
+        for i in start..&lt;a.count {
+            if i &gt; start &amp;&amp; a[i] == a[i - 1] { continue }  // cùng tầng, đã thử
+            path.append(a[i])
+            explore(i + 1)
+            path.removeLast()
+        }
+    }
+    explore(0)
+    return result
+}</code></pre></div>
+    <div>
+      <p>Vì sao là <code>i &gt; start</code> chứ không phải <code>i &gt; 0</code>? Khi <code>i == start</code>, đây là lựa chọn <em>đầu tiên</em> của node này. Nếu <code>a[i − 1]</code> bằng nó thì <code>a[i − 1]</code> đã được chọn ở tầng trên, trên chính nhánh này (cùng nhánh), không phải ở nhánh anh em. Viết <code>i &gt; 0</code> sẽ làm mất {2, 2′}.</p>
+      <p>Phải sắp xếp trước, để các giá trị bằng nhau đứng cạnh nhau và phép so với <code>a[i − 1]</code> có nghĩa.</p>
+    </div>
+  </div>
+  <p><strong>Với hoán vị (47)</strong> không có <code>start</code>, nên quy tắc được viết khác: <code>if i &gt; 0 &amp;&amp; a[i] == a[i − 1] &amp;&amp; !used[i − 1] { continue }</code>. Đọc thành: các bản sao của cùng một giá trị phải được dùng theo thứ tự trái sang phải. Dòng này hay gây khó hiểu, nên có một cách nhìn gọn hơn: <strong>lặp theo giá trị, không lặp theo chỉ số</strong>.</p>
+  <div class="codewrap"><p class="lbl">Permutations II: đếm số lần mỗi giá trị, mỗi node thử mỗi giá trị đúng một lần</p><pre><code>func permuteUnique(_ nums: [Int]) -&gt; [[Int]] {
+    var count: [Int: Int] = [:]
+    for x in nums { count[x, default: 0] += 1 }
+    let values = Array(count.keys)
+    var result: [[Int]] = [], path: [Int] = []
+    func explore() {
+        if path.count == nums.count { result.append(path); return }
+        for x in values where count[x]! &gt; 0 {   // mỗi giá trị một nhánh: hết trùng
+            count[x]! -= 1; path.append(x)       // chọn
+            explore()                            // khám phá
+            path.removeLast(); count[x]! += 1    // hoàn tác
+        }
+    }
+    explore()
+    return result
+}</code></pre></div>
+  <p>Hai nhánh anh em giờ luôn có giá trị khác nhau, nên không thể mọc ra cây con giống nhau. Cách này áp dụng được cho cả Subsets II và Combination Sum II.</p>
+</section>
+
+<!-- ============ KIỂM TRA ============ -->
+<section class="st x" id="kiem-tra">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang Quy hoạch động</p>
+  <h2>Kiểm tra: chạy tay, ước lượng kích thước cây, và nhận ra khi nào không cần quay lui</h2>
+  <p><strong>Chạy tay hai input.</strong> Input nhỏ nhất (target = 0 phải cho <code>[[]]</code>; mảng rỗng) và một input vừa đủ để có một lần hoàn tác, như <code>[2, 3]</code> với target 5. Đếm đáp án bằng tay rồi so.</p>
+  <p><strong>Ước lượng chi phí</strong> từ hình dạng cây: thời gian ≈ số node × việc làm ở mỗi node; bộ nhớ stack = độ sâu.</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Mẫu</th><th>Số node, cỡ</th><th>Tổng thời gian</th><th>n chịu được</th></tr></thead>
+    <tbody>
+      <tr><td>Tập con</td><td>2ⁿ</td><td>O(n · 2ⁿ), vì mỗi đáp án sao chép O(n)</td><td>n ≤ 20</td></tr>
+      <tr><td>Tổ hợp chập k</td><td>C(n, k)</td><td>O(k · C(n, k))</td><td>tuỳ k</td></tr>
+      <tr><td>Hoán vị</td><td>khoảng e · n! ≈ 2,7 · n!</td><td>O(n · n!)</td><td>n ≤ 10</td></tr>
+      <tr><td>N-Queens</td><td>ít hơn n! nhiều nhờ cắt tỉa</td><td>O(n!)</td><td>n ≤ 12</td></tr>
+      <tr><td>Cắt chuỗi</td><td>2ⁿ⁻¹ cách cắt</td><td>O(n · 2ⁿ)</td><td>n ≤ 16</td></tr>
+      <tr><td>Đi trên lưới</td><td>m · n điểm xuất phát × 3ᴸ</td><td>O(m · n · 3ᴸ)</td><td>L nhỏ</td></tr>
+    </tbody>
+  </table></div>
+  <p>Đọc ngược bảng này, giới hạn của đề là một gợi ý: n ≤ 10 thường là hoán vị, n ≤ 20 là tập con, n tới hàng trăm thì gần như chắc chắn không phải quay lui.</p>
+  <div class="key"><strong>Khi cây có các node trùng nhau: rẽ sang Quy hoạch động</strong><p>Nếu đề chỉ hỏi <strong>số lượng</strong>, <strong>có hay không</strong>, hoặc <strong>giá trị tốt nhất</strong>, và kết quả ở một node chỉ phụ thuộc vào <code>(start, remain)</code> chứ không phụ thuộc vào <code>path</code> đã đi, thì mọi node có cùng <code>(start, remain)</code> đang giải cùng một bài. Nhớ kết quả theo khoá đó và bạn có <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a>. Combination Sum IV (377) hỏi <em>số cách</em> → DP. Combination Sum (39) đòi <em>liệt kê</em> từng cách → phải đi hết các đường, quay lui là đúng.</p></div>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Gỡ lỗi: in cây ra để so với cây trên giấy</p><pre><code>func explore(_ start: Int, _ remain: Int, _ depth: Int) {
+    let pad = String(repeating: "  ", count: depth)
+    print(pad + "explore(\(start), \(remain)) path=\(path)")
+    // ... phần còn lại giữ nguyên, gọi đệ quy với depth + 1
+}</code></pre></div>
+    <div><p>Tham số <code>depth</code> chỉ để thụt lề. Output là đúng cái cây bạn đã vẽ, mỗi dòng một node. Chạy với input nhỏ, đặt cạnh hình vẽ: chỗ đầu tiên hai bên khác nhau là chỗ code sai. Thường gặp nhất: một <code>path</code> không sạch sau khi lời gọi con trả về.</p></div>
+  </div>
+</section>
+
+<!-- ============ TUYẾN XANH: TỔ HỢP ============ -->
+<section class="st blue" id="to-hop">
+  <p class="line-name">Tuyến mẫu · rẽ từ ga Tầng quyết định</p>
+  <h2>Tổ hợp: phần tử tiếp theo, chỉ lấy về phía sau</h2>
+  <p>Dùng khi đáp án là một <strong>tập</strong> (thứ tự không có nghĩa). Đại diện: <strong>Combinations (77)</strong>, chọn k số trong 1…n. Với n = 4, k = 2:</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>k số tăng dần, ví dụ <code>[1, 4]</code></dd>
+    <dt>Tầng</dt><dd>“số tiếp theo là số nào?”, chỉ được chọn số lớn hơn số vừa chọn</dd>
+    <dt>Trạng thái</dt><dd><code>path</code>, <code>start</code></dd>
+    <dt>Ghi nhận</dt><dd><code>path.count == k</code></dd>
+    <dt>Cắt tỉa</dt><dd>còn đủ số: cần thêm <code>need = k − path.count</code> số thì <code>i</code> chỉ chạy tới <code>n − need + 1</code></dd>
+  </dl>
+  <figure>
+    <div class="svgbox" id="cb-tree"></div>
+    <figcaption>Nhánh [4] bị cắt: chọn 4 trước tiên thì không còn số nào lớn hơn để đủ 2 số. Với n và k lớn, phép cắt này bỏ đi cả những cây con lớn ở gần gốc.</figcaption>
+  </figure>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func combine(_ n: Int, _ k: Int) -&gt; [[Int]] {
+    var result: [[Int]] = [], path: [Int] = []
+    func explore(_ start: Int) {
+        if path.count == k { result.append(path); return }
+        let need = k - path.count
+        guard start &lt;= n - need + 1 else { return }   // không còn đủ số
+        for i in start...(n - need + 1) {
+            path.append(i)
+            explore(i + 1)                           // i + 1: mỗi số một lần
+            path.removeLast()
+        }
+    }
+    explore(1)
+    return result
+}</code></pre></div>
+    <div class="codewrap" style="margin-top:0"><pre><code>func subsets(_ nums: [Int]) -&gt; [[Int]] {
+    var result: [[Int]] = [], path: [Int] = []
+    func explore(_ start: Int) {
+        result.append(path)            // mọi node là một đáp án
+        for i in start..&lt;nums.count {
+            path.append(nums[i])
+            explore(i + 1)
+            path.removeLast()
+        }
+    }
+    explore(0)
+    return result
+}</code></pre></div>
+  </div>
+  <p>Cả họ chỉ khác nhau ở ba chỗ: ghi nhận ở đâu (mọi node / đủ k / đủ tổng), gọi tiếp với <code>i</code> hay <code>i + 1</code> (dùng lại hay không), và có khử trùng không. Combination Sum II (40) = Combination Sum với <code>i + 1</code> và khử trùng. Combination Sum III (216) = Combinations với thêm điều kiện tổng. Letter Combinations (17) là biến thể “mỗi tầng một tập lựa chọn riêng”: tầng i là chữ số thứ i, lựa chọn là các chữ cái của nó, không cần <code>start</code>.</p>
+</section>
+
+<!-- ============ HOÁN VỊ ============ -->
+<section class="st blue" id="hoan-vi">
+  <h2>Hoán vị: vị trí tiếp theo, bất kỳ phần tử nào chưa dùng</h2>
+  <p>Dùng khi thứ tự trong đáp án có ý nghĩa. Đại diện: <strong>Permutations (46)</strong> với <code>[1, 2, 3]</code>.</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>dãy n số, mỗi số đúng một lần</dd>
+    <dt>Tầng</dt><dd>“vị trí thứ <code>path.count</code> đặt số nào?”, chọn bất kỳ số chưa dùng</dd>
+    <dt>Trạng thái</dt><dd><code>path</code>, <code>used[]</code></dd>
+    <dt>Ghi nhận</dt><dd><code>path.count == n</code></dd>
+    <dt>Cắt tỉa</dt><dd>không cần: mọi lá đều là đáp án; input có trùng → ga <a href="#khu-trung">Khử trùng</a></dd>
+  </dl>
+  <figure>
+    <div class="svgbox" id="pm-tree"></div>
+    <figcaption>Tầng 1 có 3 nhánh, tầng 2 có 2, tầng 3 có 1: tổng cộng 3! = 6 lá. Sau khi chọn 3 vẫn được chọn 1, đó là khác biệt duy nhất với cây tổ hợp.</figcaption>
+  </figure>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func permute(_ nums: [Int]) -&gt; [[Int]] {
+    var result: [[Int]] = [], path: [Int] = []
+    var used = [Bool](repeating: false, count: nums.count)
+    func explore() {
+        if path.count == nums.count { result.append(path); return }
+        for i in nums.indices where !used[i] {
+            used[i] = true; path.append(nums[i])   // chọn
+            explore()                              // khám phá
+            path.removeLast(); used[i] = false     // hoàn tác
+        }
+    }
+    explore()
+    return result
+}</code></pre></div>
+    <div><div class="key" style="margin-top:0"><strong>Tổ hợp hay hoán vị = start hay used</strong><p><code>start</code> nói “chỉ nhìn về phía sau”: sinh mỗi <em>tập</em> đúng một lần. <code>used</code> nói “nhìn mọi phía, trừ cái đã lấy”: sinh mọi <em>thứ tự</em>. Chọn nhầm là nguồn gốc của hai lỗi phổ biến nhất: đáp án trùng (dùng <code>used</code> cho bài tổ hợp) và thiếu đáp án (dùng <code>start</code> cho bài hoán vị).</p></div></div>
+  </div>
+</section>
+
+<!-- ============ CẮT CHUỖI ============ -->
+<section class="st blue" id="cat-chuoi">
+  <h2>Cắt chuỗi: đoạn tiếp theo kết thúc ở đâu?</h2>
+  <p>Dùng khi đáp án là cách chia một chuỗi (hoặc mảng) thành các đoạn liền nhau. Đại diện: <strong>Palindrome Partitioning (131)</strong>, chia <code>"aab"</code> thành các đoạn đều đối xứng.</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>các đoạn từ trái sang: <code>["aa", "b"]</code></dd>
+    <dt>Tầng</dt><dd>“đoạn bắt đầu ở <code>start</code> kết thúc ở đâu?”, lựa chọn <code>end</code> từ <code>start</code> tới cuối</dd>
+    <dt>Trạng thái</dt><dd><code>start</code>, <code>path</code></dd>
+    <dt>Ghi nhận</dt><dd><code>start == n</code>: đã cắt hết chuỗi</dd>
+    <dt>Cắt tỉa</dt><dd>chỉ đi vào nếu đoạn <code>s[start...end]</code> là palindrome</dd>
+  </dl>
+  <figure>
+    <div class="svgbox" id="pp-tree"></div>
+    <figcaption>Nhãn node là phần chuỗi còn phải cắt; nhãn cạnh là đoạn vừa cắt ra. Đoạn “ab” và “aab” không đối xứng nên bị cắt bỏ ngay ở cạnh, không đi xuống. Hai lá là hai cách chia.</figcaption>
+  </figure>
+  <div class="codewrap"><pre><code>func partition(_ s: String) -&gt; [[String]] {
+    let a = Array(s), n = a.count
+    var result: [[String]] = [], path: [String] = []
+    func isPal(_ i: Int, _ j: Int) -&gt; Bool {
+        var i = i, j = j
+        while i &lt; j { if a[i] != a[j] { return false }; i += 1; j -= 1 }
+        return true
+    }
+    func explore(_ start: Int) {
+        if start == n { result.append(path); return }
+        for end in start..&lt;n where isPal(start, end) {   // cắt tỉa: chỉ cắt ra palindrome
+            path.append(String(a[start...end]))           // chọn
+            explore(end + 1)                              // khám phá phần còn lại
+            path.removeLast()                             // hoàn tác
+        }
+    }
+    explore(0)
+    return result
+}</code></pre></div>
+  <p>Cùng khung: <strong>Restore IP Addresses (93)</strong> (đoạn dài 1–3 chữ số, giá trị ≤ 255, không có số 0 đứng đầu; cắt tỉa thêm khi số chữ số còn lại quá nhiều hoặc quá ít so với số đoạn còn lại), <strong>Word Break II (140)</strong> (đoạn phải có trong từ điển). Nếu đề chỉ hỏi <em>có chia được không</em> như Word Break (139), đó là DP theo <code>start</code>.</p>
+</section>
+
+<!-- ============ ĐẶT VÀO Ô ============ -->
+<section class="st blue" id="dat-o">
+  <h2>Đặt vào ô: hàng này đặt quân ở đâu mà không phạm luật?</h2>
+  <p>Dùng khi phải điền giá trị vào các ô sao cho thoả ràng buộc. Đại diện: <strong>N-Queens (51)</strong>: đặt n quân hậu lên bàn n×n, không hai quân nào cùng hàng, cùng cột hay cùng đường chéo.</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>cột của quân hậu ở mỗi hàng: <code>[1, 3, 0, 2]</code></dd>
+    <dt>Tầng</dt><dd>“hàng <code>row</code> đặt quân ở cột nào?”</dd>
+    <dt>Trạng thái</dt><dd><code>row</code>; tập <code>cols</code>, tập <code>r − c</code>, tập <code>r + c</code> đang bị chiếm</dd>
+    <dt>Ghi nhận</dt><dd><code>row == n</code></dd>
+    <dt>Cắt tỉa</dt><dd>bỏ qua cột bị khống chế, kiểm tra O(1) bằng ba tập</dd>
+  </dl>
+  <p>Vì sao ba tập đủ để kiểm tra đường chéo? Trên một đường chéo ↘, hiệu <code>r − c</code> không đổi; trên một đường chéo ↙, tổng <code>r + c</code> không đổi:</p>
+  <div class="diag" id="nq-diag"></div>
+  <p>Giờ xem quay lui làm việc. Ô hồng là ô đang bị khống chế; dấu ✕ là cột vừa bị loại ở hàng đang xét.</p>
+  <div class="panel">
+    <div class="nq">
+      <div class="svgbox" id="nq-board"></div>
+      <div>
+        <p class="mini">Trạng thái dùng chung</p>
+        <div class="kv" id="nq-kv"></div>
+        <p class="mini">Đáp án đã tìm</p><div class="chips" id="nq-res"></div>
+      </div>
+    </div>
+    <p class="say" id="nq-say" aria-live="polite"></p>
+    <div class="ctl" id="nq-ctl"></div>
+    <div class="legend"><span><i class="sw run"></i>quân vừa đặt</span><span><i class="sw dead"></i>hàng hết lựa chọn: quay lui</span><span><i class="sw ans"></i>đặt đủ n quân</span></div>
+  </div>
+  <div class="codewrap"><pre><code>func solveNQueens(_ n: Int) -&gt; [[String]] {
+    var result: [[String]] = [], queens: [Int] = []     // queens[r] = cột của hàng r
+    var cols = Set&lt;Int&gt;(), diag = Set&lt;Int&gt;(), anti = Set&lt;Int&gt;()
+    func place(_ row: Int) {
+        if row == n {
+            result.append(queens.map { c in
+                String(repeating: ".", count: c) + "Q" + String(repeating: ".", count: n - c - 1)
+            })
+            return
+        }
+        for c in 0..&lt;n {
+            if cols.contains(c) || diag.contains(row - c) || anti.contains(row + c) { continue }
+            cols.insert(c); diag.insert(row - c); anti.insert(row + c); queens.append(c)      // chọn
+            place(row + 1)                                                                  // khám phá
+            cols.remove(c); diag.remove(row - c); anti.remove(row + c); queens.removeLast()   // hoàn tác
+        }
+    }
+    place(0)
+    return result
+}</code></pre></div>
+  <p><strong>Sudoku Solver (37)</strong> cùng mẫu: tầng là ô trống tiếp theo, lựa chọn là 1…9, trạng thái là ba nhóm tập (mỗi hàng, mỗi cột, mỗi khối 3×3). Hàm trả <code>Bool</code> vì chỉ cần một lời giải. Điền ô có ít lựa chọn nhất trước giúp cây nhỏ đi rất nhiều. N-Queens II (52) chỉ hỏi số lời giải: đổi ghi nhận thành <code>count += 1</code>.</p>
+</section>
+
+<!-- ============ ĐI TRÊN LƯỚI ============ -->
+<section class="st blue" id="luoi">
+  <h2>Đi trên lưới: bước tiếp theo đi hướng nào, và nhả ô khi lùi lại</h2>
+  <p>Dùng khi đáp án là một đường đi trên lưới hoặc đồ thị. Đại diện: <strong>Word Search (79)</strong>: có đọc được <code>word</code> bằng một đường gồm các ô kề nhau, mỗi ô dùng một lần không?</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>dãy ô kề nhau đọc ra <code>word</code></dd>
+    <dt>Tầng</dt><dd>“ký tự thứ k nằm ở ô kề nào?”, lựa chọn: 4 hướng</dd>
+    <dt>Trạng thái</dt><dd><code>(r, c)</code>, <code>k</code>, các ô đang nằm trên đường (đánh dấu ngay trên bàn)</dd>
+    <dt>Ghi nhận</dt><dd><code>k == word.count</code> → <code>true</code></dd>
+    <dt>Cắt tỉa</dt><dd>ra ngoài bàn, ký tự không khớp, ô đang nằm trên đường</dd>
+  </dl>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 640 230" style="min-width:560px" role="img" aria-label="Bàn chữ 3 hàng 4 cột, đường đi đọc ra ABCCED, hai bước thử bị loại vì ký tự không khớp">
+      <defs><marker id="ahW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--blue)"/></marker><marker id="ahX" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--red)"/></marker></defs>
+      <g stroke-width="2" style="stroke:var(--line)">
+        <rect x="16" y="16" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="80" y="16" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="144" y="16" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="208" y="16" width="64" height="64" style="fill:var(--bg)"/>
+        <rect x="16" y="80" width="64" height="64" style="fill:var(--bg)"/><rect x="80" y="80" width="64" height="64" style="fill:var(--bg)"/><rect x="144" y="80" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="208" y="80" width="64" height="64" style="fill:var(--bg)"/>
+        <rect x="16" y="144" width="64" height="64" style="fill:var(--bg)"/><rect x="80" y="144" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="144" y="144" width="64" height="64" style="fill:color-mix(in srgb,var(--blue) 18%,var(--bg))"/><rect x="208" y="144" width="64" height="64" style="fill:var(--bg)"/>
+      </g>
+      <g font-family="Roboto Mono,monospace" font-size="24" font-weight="600" text-anchor="middle" fill="currentColor">
+        <text x="48" y="57">A</text><text x="112" y="57">B</text><text x="176" y="57">C</text><text x="240" y="57">E</text>
+        <text x="48" y="121">S</text><text x="112" y="121">F</text><text x="176" y="121">C</text><text x="240" y="121">S</text>
+        <text x="48" y="185">A</text><text x="112" y="185">D</text><text x="176" y="185">E</text><text x="240" y="185">E</text>
+      </g>
+      <g font-size="11" font-weight="700" style="fill:var(--blue)"><text x="21" y="30">1</text><text x="85" y="30">2</text><text x="149" y="30">3</text><text x="149" y="94">4</text><text x="149" y="158">5</text><text x="85" y="158">6</text></g>
+      <g stroke-width="3" style="stroke:var(--blue)" marker-end="url(#ahW)"><line x1="64" y1="48" x2="96" y2="48"/><line x1="128" y1="48" x2="160" y2="48"/><line x1="176" y1="64" x2="176" y2="96"/><line x1="176" y1="128" x2="176" y2="160"/><line x1="160" y1="176" x2="128" y2="176"/></g>
+      <g stroke-width="2.5" stroke-dasharray="4 3" style="stroke:var(--red)" marker-end="url(#ahX)"><line x1="192" y1="48" x2="222" y2="48"/><line x1="192" y1="112" x2="222" y2="112"/></g>
+      <g font-size="16" font-weight="800" style="fill:var(--red)"><text x="252" y="34">✕</text><text x="252" y="98">✕</text></g>
+      <g font-size="14" fill="currentColor">
+        <text x="300" y="34" font-weight="800">word = "ABCCED"</text>
+        <text x="300" y="62"><tspan style="fill:var(--blue)" font-weight="700">ô xanh</tspan>: đang nằm trên đường, tạm ghi "#"</text>
+        <text x="300" y="86">số nhỏ: thứ tự ký tự trên đường</text>
+        <text x="300" y="116"><tspan style="fill:var(--red)" font-weight="700">✕</tspan> ở ô 3: cần “C”, ô E bên phải không khớp</text>
+        <text x="300" y="140"><tspan style="fill:var(--red)" font-weight="700">✕</tspan> ở ô 4: cần “E”, ô S không khớp; ô 3 phía</text>
+        <text x="300" y="160">trên là “#” nên cũng bị loại; đi xuống ô 5</text>
+        <text x="300" y="192">khi một nhánh thất bại trả về, gỡ “#” để ô đó</text>
+        <text x="300" y="212">dùng được cho các đường khác</text>
+      </g>
+    </svg></div>
+  </figure>
+  <div class="codewrap"><pre><code>func exist(_ board: [[Character]], _ word: String) -&gt; Bool {
+    var b = board
+    let w = Array(word), m = b.count, n = b[0].count
+    func dfs(_ r: Int, _ c: Int, _ k: Int) -&gt; Bool {
+        if k == w.count { return true }
+        if r &lt; 0 || r &gt;= m || c &lt; 0 || c &gt;= n || b[r][c] != w[k] { return false }  // cắt tỉa
+        let saved = b[r][c]
+        b[r][c] = "#"                          // chọn: ô này đang nằm trên đường
+        let found = dfs(r + 1, c, k + 1) || dfs(r - 1, c, k + 1)
+                 || dfs(r, c + 1, k + 1) || dfs(r, c - 1, k + 1)
+        b[r][c] = saved                        // hoàn tác: nhả ô cho đường khác
+        return found
+    }
+    for r in 0..&lt;m { for c in 0..&lt;n where dfs(r, c, 0) { return true } }
+    return false
+}</code></pre></div>
+  <div class="key"><strong>Đánh dấu vĩnh viễn là duyệt đồ thị; đánh dấu rồi gỡ là quay lui</strong><p>Khi đếm đảo (200), ô đã thăm không bao giờ cần thăm lại, nên <code>visited</code> không bao giờ gỡ. Ở đây, một ô bị chặn trên đường này vẫn có thể nằm trên một đường khác, nên phải gỡ. Câu hỏi để phân biệt: <strong>đề hỏi về các ô, hay về các đường đi?</strong> Hỏi về đường đi thì cần gỡ.</p></div>
+  <p>Cùng mẫu: <strong>Word Search II (212)</strong> (tìm nhiều từ cùng lúc, cắt tỉa bằng Trie: dừng ngay khi tiền tố không có trong Trie), <strong>Unique Paths III (980)</strong> (đếm đường đi qua mọi ô trống đúng một lần).</p>
+</section>
+
+<!-- ============ CHIA NHÓM ============ -->
+<section class="st blue" id="chia-nhom">
+  <h2>Chia nhóm: phần tử này vào nhóm nào?</h2>
+  <p>Dùng khi phải phân các phần tử vào k nhóm. Đại diện: <strong>Partition to K Equal Sum Subsets (698)</strong>: <code>[4, 3, 2, 3, 5, 2, 1]</code>, k = 4, mỗi nhóm phải có tổng 5.</p>
+  <dl class="card">
+    <dt>Lời giải</dt><dd>với mỗi số, chỉ số nhóm nó thuộc về</dd>
+    <dt>Tầng</dt><dd>duyệt theo input: “số thứ i vào nhóm nào?”, lựa chọn là k nhóm</dd>
+    <dt>Trạng thái</dt><dd><code>i</code>, mảng <code>sums</code> chứa tổng hiện tại của từng nhóm</dd>
+    <dt>Ghi nhận</dt><dd><code>i == n</code>: mọi số đã vào nhóm mà không nhóm nào vượt 5, nên mọi nhóm đúng bằng 5</dd>
+    <dt>Cắt tỉa</dt><dd>bỏ nhóm sẽ vượt sức chứa; bỏ nhóm có cùng tổng với nhóm đã thử (đối xứng); xếp số lớn trước</dd>
+  </dl>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 620 276" style="min-width:540px" role="img" aria-label="Bốn nhóm sức chứa 5: nhóm 1 đã có 5, nhóm 2 có 4, nhóm 3 và 4 rỗng. Số 3 tiếp theo chỉ thử nhóm 3; nhóm 4 bị bỏ vì giống hệt nhóm 3">
+      <defs><marker id="ahC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect x="265" y="8" width="90" height="34" rx="8" style="fill:var(--amber)"/>
+      <text x="310" y="31" text-anchor="middle" font-size="16" font-weight="800" fill="#111" style="stroke:none">số 3</text>
+      <g stroke-width="2" fill="none" style="stroke:currentColor" opacity=".7" marker-end="url(#ahC)"><path d="M290 44 L95 94"/><path d="M302 44 L225 94"/><path d="M318 44 L355 94"/><path d="M330 44 L485 94"/></g>
+      <g stroke-width="2" stroke-dasharray="5 4" style="fill:none;stroke:var(--mute)"><rect x="40" y="100" width="90" height="140" rx="6"/><rect x="180" y="100" width="90" height="140" rx="6"/><rect x="310" y="100" width="90" height="140" rx="6"/><rect x="440" y="100" width="90" height="140" rx="6"/></g>
+      <rect x="44" y="104" width="82" height="132" rx="4" style="fill:var(--blue)"/><text x="85" y="176" text-anchor="middle" font-size="18" font-weight="800" fill="#fff" style="stroke:none">5</text>
+      <rect x="184" y="132" width="82" height="104" rx="4" style="fill:var(--blue)"/><text x="225" y="190" text-anchor="middle" font-size="18" font-weight="800" fill="#fff" style="stroke:none">4</text>
+      <rect x="314" y="156" width="82" height="80" rx="4" stroke-width="2.5" stroke-dasharray="5 4" style="fill:color-mix(in srgb,var(--amber) 30%,var(--bg));stroke:var(--amber)"/><text x="355" y="202" text-anchor="middle" font-size="18" font-weight="800" fill="currentColor">3?</text>
+      <g font-size="13" font-weight="700" text-anchor="middle">
+        <text x="85" y="84" style="fill:var(--red)">✕ 5 + 3 &gt; 5</text><text x="225" y="84" style="fill:var(--red)">✕ 4 + 3 &gt; 5</text><text x="355" y="84" style="fill:var(--green)">✓ thử</text><text x="485" y="84" fill="currentColor">↺ giống nhóm 3: bỏ</text>
+      </g>
+      <g font-size="13" text-anchor="middle" fill="currentColor"><text x="85" y="260">nhóm 1 · tổng 5</text><text x="225" y="260">nhóm 2 · tổng 4</text><text x="355" y="260">nhóm 3 · tổng 0</text><text x="485" y="260">nhóm 4 · tổng 0</text></g>
+    </svg></div>
+    <figcaption>Thứ tự xếp sau khi sắp giảm dần là 5, 4, 3, 3, 2, 2, 1. Hai nhóm cùng đang có tổng 0 là hai lựa chọn tương đương: thử nhóm 3 mà thất bại thì nhóm 4 chắc chắn cũng thất bại. Đây chính là khử trùng ở ga Khử trùng, áp dụng cho các nhóm.</figcaption>
+  </figure>
+  <div class="codewrap"><pre><code>func canPartitionKSubsets(_ nums: [Int], _ k: Int) -&gt; Bool {
+    let total = nums.reduce(0, +)
+    guard total % k == 0 else { return false }
+    let target = total / k, a = nums.sorted(by: &gt;)     // số lớn trước: thất bại sớm
+    if a[0] &gt; target { return false }
+    var sums = [Int](repeating: 0, count: k)
+    func place(_ i: Int) -&gt; Bool {
+        if i == a.count { return true }
+        var tried = Set&lt;Int&gt;()                          // các tổng đã thử ở node này
+        for j in 0..&lt;k {
+            if sums[j] + a[i] &gt; target || tried.contains(sums[j]) { continue }  // vượt / đối xứng
+            tried.insert(sums[j])
+            sums[j] += a[i]                              // chọn
+            if place(i + 1) { return true }              // khám phá
+            sums[j] -= a[i]                              // hoàn tác
+        }
+        return false
+    }
+    return place(0)
+}</code></pre></div>
+  <p>Matchsticks to Square (473) là bài này với k = 4. Có thể nhìn theo output thay vì input: lấp đầy từng nhóm một, mỗi nhóm chọn tập số chưa dùng. Khi đó trạng thái là mặt nạ bit <code>used</code>, và vì kết quả chỉ phụ thuộc vào mặt nạ, bài trở thành DP trên bitmask với n ≤ 16. Find Minimum Time to Finish All Jobs (1723) là biến thể tối ưu: thêm cận “đã tệ hơn <code>best</code> thì dừng”.</p>
+</section>
+
+<!-- ============ BẢNG TRA ============ -->
+<section class="st blue" id="bang-tra">
+  <h2>Bảng tra: câu hỏi ở mỗi tầng quyết định gần hết phần còn lại</h2>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Mẫu</th><th>Câu hỏi mỗi tầng</th><th>Trạng thái</th><th>Ghi nhận</th><th>Cắt tỉa, khử trùng</th><th>Bài</th></tr></thead>
+    <tbody>
+      <tr><td>Tổ hợp</td><td>phần tử tiếp theo, chỉ lấy về phía sau</td><td><code>path</code>, <code>start</code></td><td>mọi node / đủ k / đủ tổng</td><td>sắp xếp + break; còn đủ số; <code>i &gt; start</code> trùng thì bỏ</td><td>78, 77, 39, 40, 216, 17</td></tr>
+      <tr><td>Hoán vị</td><td>vị trí tiếp theo, phần tử nào chưa dùng</td><td><code>path</code>, <code>used</code></td><td><code>path.count == n</code></td><td>lặp theo giá trị với bảng đếm</td><td>46, 47, 784</td></tr>
+      <tr><td>Cắt chuỗi</td><td>đoạn tiếp theo kết thúc ở đâu</td><td><code>start</code>, <code>path</code></td><td><code>start == n</code></td><td>đoạn phải hợp lệ; độ dài còn lại phải khả thi</td><td>131, 93, 140, 22</td></tr>
+      <tr><td>Đặt vào ô</td><td>ô (hàng) này đặt giá trị gì</td><td><code>row</code>, các tập ràng buộc</td><td><code>row == n</code> / hết ô trống</td><td>kiểm tra O(1) bằng tập; ô ít lựa chọn trước</td><td>51, 52, 37</td></tr>
+      <tr><td>Đi trên lưới</td><td>bước tiếp theo đi hướng nào</td><td><code>(r, c)</code>, <code>k</code>, ô trên đường</td><td><code>k == word.count</code></td><td>ký tự không khớp; ô đang trên đường; Trie cho tiền tố</td><td>79, 212, 980</td></tr>
+      <tr><td>Chia nhóm</td><td>phần tử này vào nhóm nào</td><td><code>i</code>, tổng mỗi nhóm</td><td><code>i == n</code></td><td>vượt sức chứa; nhóm cùng tổng; số lớn trước</td><td>698, 473, 1723</td></tr>
+    </tbody>
+  </table></div>
+  <p>Generate Parentheses (22) nằm ở hàng “Cắt chuỗi” theo nghĩa rộng: tầng là ký tự tiếp theo, lựa chọn là <code>"("</code> hoặc <code>")"</code>, trạng thái là số ngoặc mở và đóng đã dùng, cắt tỉa: chỉ mở khi số mở &lt; n, chỉ đóng khi số đóng &lt; số mở.</p>
+</section>
+
+<!-- ============ KHI BỊ KẸT ============ -->
+<section class="st green" id="bi-ket">
+  <h2>Khi bị kẹt: chín triệu chứng và nguyên nhân thường gặp</h2>
+  <div class="key" style="margin-top:0"><strong>Khi không biết bắt đầu từ đâu</strong><p>Viết ra input nhỏ nhất có ít nhất hai đáp án. Vẽ gốc. Hỏi câu của ga Tầng quyết định và vẽ các con. Vẽ tới tầng 2. Ghi trạng thái cạnh mỗi node. Tô xanh node nào là đáp án. Đến lúc này code đã có đủ: sáu chỗ trống của khung đều đọc được từ hình.</p></div>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Triệu chứng</th><th>Nguyên nhân</th><th>Sửa</th></tr></thead>
+    <tbody>
+      <tr><td>Đáp án trùng, chỉ khác thứ tự</td><td>đáp án là tập nhưng cây phân biệt thứ tự</td><td>thêm <code>start</code>, lặp từ <code>start</code></td></tr>
+      <tr><td>Đáp án giống hệt nhau khi input có số trùng</td><td>hai nhánh anh em cùng giá trị</td><td>sắp xếp + <code>i &gt; start &amp;&amp; a[i] == a[i−1]</code>, hoặc lặp theo giá trị</td></tr>
+      <tr><td>Thiếu đáp án như <code>[2, 2]</code> sau khi khử trùng</td><td>khử trùng cả trên cùng nhánh: viết <code>i &gt; 0</code></td><td>đổi thành <code>i &gt; start</code></td></tr>
+      <tr><td>Thiếu hoán vị như <code>[3, 1, 2]</code></td><td>dùng <code>start</code> cho bài có thứ tự</td><td>dùng <code>used[]</code></td></tr>
+      <tr><td>Đáp án sau dính phần tử của đáp án trước</td><td>quên hoàn tác, hoặc <code>return</code> giữa chọn và hoàn tác</td><td>soát từng cặp chọn / bỏ chọn; dời kiểm tra lên đầu hàm</td></tr>
+      <tr><td>Mọi đáp án đã lưu đều rỗng (Java, Python)</td><td>lưu tham chiếu tới <code>path</code></td><td>sao chép khi ghi</td></tr>
+      <tr><td>Một phần tử bị dùng nhiều lần (hoặc ngược lại)</td><td>nhầm <code>i</code> với <code>i + 1</code></td><td>quay về câu “dùng được mấy lần?” ở ga Lời giải</td></tr>
+      <tr><td>Mất đáp án sau khi thêm <code>break</code></td><td><code>break</code> khi mảng chưa sắp xếp</td><td>sắp xếp trước, hoặc dùng <code>continue</code></td></tr>
+      <tr><td>Đúng nhưng quá thời gian</td><td>cắt tỉa muộn (ở lá); tính lại trạng thái O(n) ở mỗi node; node trùng</td><td>đưa kiểm tra lên trước lời gọi; mang theo <code>remain</code>, tập hợp; node trùng → DP</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ LỘ TRÌNH ============ -->
+<section class="st green" id="lo-trinh">
+  <h2>Lộ trình luyện: mỗi bài, vẽ cây hai tầng trước khi viết dòng code đầu tiên</h2>
+  <ol class="route">
+    <li><strong>Nhận ra cây</strong>Viết Subsets theo cả hai góc nhìn, rồi tự giải thích vì sao cả hai cùng đúng.<div class="pb"><span>78 Subsets</span><span>77 Combinations</span><span>17 Letter Combinations</span></div></li>
+    <li><strong>Thứ tự chuẩn và dùng lại</strong>Luyện câu hỏi <code>i</code> hay <code>i + 1</code>, và vì sao cần <code>start</code>.<div class="pb"><span>39 Combination Sum</span><span>216 Combination Sum III</span></div></li>
+    <li><strong>Hoán vị</strong>Luyện <code>used</code>; bài 784 là duyệt theo input với hai lựa chọn mỗi chữ.<div class="pb"><span>46 Permutations</span><span>784 Letter Case Permutation</span></div></li>
+    <li><strong>Khử trùng</strong>Viết mỗi bài hai cách: <code>i &gt; start</code> và lặp theo giá trị.<div class="pb"><span>90 Subsets II</span><span>40 Combination Sum II</span><span>47 Permutations II</span></div></li>
+    <li><strong>Cắt chuỗi và cắt tỉa theo đếm</strong>Tầng là vị trí cắt; cắt tỉa dựa trên phần còn lại.<div class="pb"><span>131 Palindrome Partitioning</span><span>93 Restore IP Addresses</span><span>22 Generate Parentheses</span></div></li>
+    <li><strong>Ràng buộc trên bàn</strong>Luyện trạng thái giúp kiểm tra O(1) và kiểu trả về <code>Bool</code>.<div class="pb"><span>51 N-Queens</span><span>52 N-Queens II</span><span>37 Sudoku Solver</span></div></li>
+    <li><strong>Lưới</strong>Luyện đánh dấu rồi gỡ; so với bài đếm đảo để thấy khác biệt.<div class="pb"><span>79 Word Search</span><span>212 Word Search II</span><span>980 Unique Paths III</span></div></li>
+    <li><strong>Chia nhóm và cận</strong>Luyện cắt tỉa đối xứng, thứ tự thử, và cận cho bài tối ưu.<div class="pb"><span>698 Partition K Subsets</span><span>473 Matchsticks to Square</span><span>1723 Minimum Time to Finish All Jobs</span></div></li>
+  </ol>
+</section>
+
+<!-- ============ MẪU ============ -->
+<section class="st green last" id="mau">
+  <h2>Mẫu suy luận: điền tám dòng này trước khi viết code</h2>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Mẫu trống</p><pre class="plain"><code>Bài: ...
+1. Lời giải   : một đáp án viết thành dãy = ...
+                thứ tự có nghĩa? ...  dùng lại? ...
+2. Tầng       : ở mỗi node, câu hỏi là "..."
+                các lựa chọn: ...
+3. Trạng thái : tham số: ...
+                dùng chung (phải hoàn tác): ...
+4. Ghi nhận   : đáp án khi ...;  có return? ...
+                ngõ cụt khi ...
+5. Hoàn tác   : chọn ...  ↔  bỏ chọn ...
+6. Cắt tỉa    : trước khi gọi, bỏ lựa chọn nếu ...
+7. Khử trùng  : input có trùng? → ...
+8. Kiểm tra   : cây cỡ ... node; n ≤ ... có ổn?
+                chỉ hỏi đếm / có-không và node chỉ
+                phụ thuộc (...)? → DP</code></pre></div>
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Đã điền cho Combination Sum</p><pre class="plain"><code>Bài: Combination Sum (39)
+1. Lời giải   : [2, 2, 3]: các số không giảm
+                thứ tự: không;  dùng lại: có
+2. Tầng       : "số tiếp theo là số nào?"
+                các lựa chọn: cs[start...]
+3. Trạng thái : tham số: start, remain
+                dùng chung: path
+4. Ghi nhận   : remain == 0 → ghi, return
+                ngõ cụt: không số nào ≤ remain
+5. Hoàn tác   : path.append(cs[i]) ↔ path.removeLast()
+6. Cắt tỉa    : sắp xếp; cs[i] &gt; remain → break
+7. Khử trùng  : candidates khác nhau → không cần
+8. Kiểm tra   : target = 0 → [[]]; [2,3], 5 → [[2,3]]
+                đề đòi liệt kê → quay lui
+                (chỉ hỏi số cách thì DP theo remain)</code></pre></div>
+  </div>
+  <p>Dòng nào không điền được, đó là ga cần quay lại. Thường nhất là dòng 2: chưa chọn được câu hỏi cho mỗi tầng. Khi đó, quay về dòng 1 và viết đáp án thành dãy một lần nữa.</p>
+</section>
+
+</main>
+<footer><div class="wrap">Tài liệu học quay lui · bài thứ tư, đi cùng “Tư duy Đệ quy”, “Tư duy Quy hoạch động” và “Tư duy Tham lam” · ví dụ code bằng Swift · bài tập đánh số theo LeetCode.</div></footer>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+
+/* stacked tables */
+for(const tb of document.querySelectorAll('table.stack')){const hs=[...tb.querySelectorAll('thead th')].map(h=>h.textContent.trim());for(const tr of tb.querySelectorAll('tbody tr'))[...tr.children].forEach((td,i)=>{td.dataset.l=hs[i]||''})}
+
+/* code: copy + highlight */
+const KW=/\b(func|let|var|for|in|if|else|return|guard|where|while|break|continue|true|false)\b/g;
+for(const pre of document.querySelectorAll('.codewrap pre')){
+  const code=pre.querySelector('code');
+  if(!pre.classList.contains('plain')){code.innerHTML=code.innerHTML.split('\n').map(line=>{const k=line.indexOf('//');const a=k<0?line:line.slice(0,k);const b=k<0?'':line.slice(k);return a.replace(KW,'<span class="kw">$1</span>')+(b?'<span class="cm">'+b+'</span>':'')}).join('\n')}
+  const btn=document.createElement('button');btn.className='copy';btn.type='button';btn.textContent='Sao chép';
+  btn.addEventListener('click',()=>{const t=code.textContent;try{navigator.clipboard.writeText(t).then(()=>{btn.textContent='Đã chép';setTimeout(()=>{btn.textContent='Sao chép'},1400)},()=>{btn.textContent='Không chép được'})}catch(e){btn.textContent='Không chép được'}});
+  pre.parentElement.appendChild(btn);
+}
+
+/* generic stepper */
+function stepper(ctlEl,N,paint,opts){
+  opts=opts||{};let t=Math.min(opts.start||0,N),timer=null;
+  ctlEl.innerHTML='<button type="button" data-a="prev">← Lùi</button><button type="button" data-a="next" class="pri">Bước tiếp →</button>'+(opts.auto?'<button type="button" data-a="auto" aria-pressed="false">Tự chạy</button>':'<button type="button" data-a="all">Chạy hết</button>')+'<button type="button" data-a="reset">Làm lại</button>';
+  const b=a=>ctlEl.querySelector(`[data-a="${a}"]`);
+  const stop=()=>{if(timer){clearInterval(timer);timer=null}if(b('auto'))b('auto').setAttribute('aria-pressed','false')};
+  const draw=()=>{paint(t);b('prev').disabled=t===0;b('next').disabled=t===N;if(b('all'))b('all').disabled=t===N};
+  const h=e=>{const a=e.target.closest('button')?.dataset.a;if(!a)return;
+    if(a==='prev'){stop();t=Math.max(0,t-1)}else if(a==='next'){stop();t=Math.min(N,t+1)}else if(a==='all'){t=N}else if(a==='reset'){stop();t=0}
+    else if(a==='auto'){if(timer){stop()}else{if(t===N)t=0;b('auto').setAttribute('aria-pressed','true');timer=setInterval(()=>{if(t>=N){stop();return}t++;draw()},700)}}
+    draw()};
+  ctlEl.addEventListener('click',h);draw();
+}
+function tog(id,cb){const g=$(id);g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));cb(b.dataset.m)})}
+
+/* ---------- metro map ---------- */
+const ST=[['loi-giai','Lời giải','đáp án ra sao?'],['tang','Tầng quyết định','mỗi bước chọn gì?'],['trang-thai','Trạng thái','cần nhớ gì?'],['ghi-nhan','Ghi nhận','khi nào là xong?'],['hoan-tac','Hoàn tác','chọn, đi, gỡ'],['cat-tia','Cắt tỉa','bỏ nhánh chết'],['khu-trung','Khử trùng','bỏ nhánh lặp'],['kiem-tra','Kiểm tra','chạy tay, đo cây']];
+const PT=[['to-hop','Tổ hợp','Subsets'],['hoan-vi','Hoán vị','Permutations'],['cat-chuoi','Cắt chuỗi','Palindrome'],['dat-o','Đặt vào ô','N-Queens'],['luoi','Đi trên lưới','Word Search'],['chia-nhom','Chia nhóm','K Subsets']];
+const map=$('map');const wideMQ=window.matchMedia('(min-width:1040px)');
+function stn(x,y,col,id,name,hint,anchor,lx,ly,big){const r=big?14:10;const sc=big?'var(--ink)':col;
+  return `<g class="stn" data-to="${id}" tabindex="0" role="link" aria-label="${name}"><circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--bg);stroke:${sc}" stroke-width="5"/><text x="${lx}" y="${ly}" text-anchor="${anchor}" font-weight="800" font-size="15" fill="currentColor">${name}</text><text x="${lx}" y="${ly+19}" text-anchor="${anchor}" font-size="13" fill="currentColor" opacity=".72">${hint}</text></g>`}
+function drawMap(){
+  const W=map.clientWidth,H=map.clientHeight;if(!W)return;let o='';
+  if(wideMQ.matches&&W>=900){
+    const m=70,s=(W-2*m)/7,yT=48,yR=170,yB=H-110,e=30;
+    const xs=ST.map((_,i)=>m+i*s),x1=xs[1],x5=xs[5],x7=xs[7];
+    const b0=x1+e,span=W-m-b0,bxs=PT.map((_,k)=>b0+span*(k+.5)/6);
+    o+=`<path d="M${x7} ${yR} L${x7} ${yT+e} L${x7-e} ${yT} L${x5} ${yT}" fill="none" style="stroke:var(--ink)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${x1} ${yR} L${x1} ${yB-e} L${x1+e} ${yB} L${W-m+24} ${yB}" fill="none" style="stroke:var(--blue)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${m-24} ${yR} L${W-m+24} ${yR}" fill="none" style="stroke:var(--red)" stroke-width="12" stroke-linecap="round"/>`;
+    o+=`<text x="${m-20}" y="${yR+40}" font-size="13" font-weight="700" style="fill:var(--red)">Tuyến tư duy</text><text x="${x1-14}" y="${(yR+yB)/2+5}" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--blue)">Tuyến mẫu</text>`;
+    o+=`<g class="stn" data-to="kiem-tra" tabindex="0" role="link" aria-label="Sang Quy hoạch động"><circle cx="${x5}" cy="${yT}" r="12" style="fill:var(--bg);stroke:var(--ink)" stroke-width="5"/><text x="${x5-20}" y="${yT-2}" text-anchor="end" font-weight="800" font-size="15" fill="currentColor">Sang Quy hoạch động</text><text x="${x5-20}" y="${yT+17}" text-anchor="end" font-size="13" fill="currentColor" opacity=".72">khi cây có node trùng</text></g>`;
+    ST.forEach((t,i)=>{o+=stn(xs[i],yR,'var(--red)',t[0],t[1],t[2],'middle',xs[i],i===7?yR+36:yR-44,i===1||i===7)});
+    PT.forEach((t,k)=>{o+=stn(bxs[k],yB,'var(--blue)',t[0],t[1],t[2],'middle',bxs[k],yB+38,false)});
+  }else{
+    const X0=26,top=24,NS=14,sy=(H-2*top)/(NS-1),L=X0+34;const ys=[...Array(NS)].map((_,i)=>top+i*sy);const ya=ys[7],yb=ys[8];
+    o+=`<path d="M${X0} ${ys[1]} L${X0+16} ${ys[1]+16} L${X0+16} ${(ya+yb)/2-8} L${X0} ${(ya+yb)/2+8} L${X0} ${ys[13]+10}" fill="none" style="stroke:var(--blue)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${X0} ${top-10} L${X0} ${ya}" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linecap="round"/>`;
+    ST.forEach((t,i)=>{o+=stn(X0,ys[i],'var(--red)',t[0],t[1],i===7?'node trùng → sang DP':t[2],'start',L,ys[i]-2,i===1||i===7)});
+    PT.forEach((t,k)=>{o+=stn(X0,ys[8+k],'var(--blue)',t[0],t[1],t[2],'start',L,ys[8+k]-2,false)});
+  }
+  map.innerHTML=o;
+}
+map.addEventListener('click',e=>{const g=e.target.closest('.stn');if(g)$(g.dataset.to)?.scrollIntoView()});
+map.addEventListener('keydown',e=>{const g=e.target.closest('.stn');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$(g.dataset.to)?.scrollIntoView()}});
+new ResizeObserver(drawMap).observe(map);
+
+/* ---------- tree renderer ---------- */
+const mn=x=>String(x).replace('-','−');
+const fmtS=a=>a.length?'{'+a.join(',')+'}':'∅';
+const fmtA=a=>'['+a.join(', ')+']';
+function lay(root){let leaf=0,maxD=0;const all=[];(function go(n,d,p){n.d=d;n.par=p;all.push(n);if(d>maxD)maxD=d;if(!n.k.length){n.x=leaf++;return}n.k.forEach(c=>go(c,d+1,n));n.x=(n.k[0].x+n.k[n.k.length-1].x)/2})(root,0,null);return root._L={leaf,maxD,all}}
+function treeSVG(root,o){
+  const L=root._L||lay(root);const slot=o.slot||60,dy=o.dy||64,px=o.px||40,top=22;
+  const X=n=>px+n.x*slot,Y=n=>top+n.d*dy;const W=2*px+(L.leaf-1)*slot,H=2*top+L.maxD*dy;
+  const look=o.look||(n=>n.st||'');let e='',v='';
+  for(const n of L.all){if(!n.par)continue;const p=n.par,lk=look(n),gh=lk==='ghost',fa=lk==='faint',on=!!(o.on&&o.on(n));
+    e+=`<line x1="${X(p)}" y1="${Y(p)+13}" x2="${X(n)}" y2="${Y(n)-13}" stroke-width="${on?5:2}"${gh?' stroke-dasharray="5 5"':''} style="stroke:${on?'var(--blue)':gh?'var(--mute)':'currentColor'}" stroke-opacity="${on?1:gh?.45:fa?.2:.5}"/>`;
+    if(n.el){const dx=X(n)-X(p),mx=(X(p)+X(n))/2,my=(Y(p)+Y(n))/2+4;e+=`<text x="${mx+(dx<-1?-5:5)}" y="${my}" text-anchor="${dx<-1?'end':'start'}" font-size="12" fill="currentColor" opacity="${gh?.5:fa?.3:.85}">${n.el}</text>`}}
+  for(const n of L.all){const lk=look(n),w=Math.max(30,n.lab.length*7.8+14),x=X(n),y=Y(n);
+    let f='var(--bg)',s='currentColor',t='currentColor',op=1,dash='',tn=false;
+    if(lk==='ans'){f=s='var(--green)';t='#fff';tn=true}
+    else if(lk==='dup'){f=s='var(--red)';t='#fff';tn=true}
+    else if(lk==='dead'){s='var(--red)';t='var(--red)';dash='4 3'}
+    else if(lk==='cur'){f=s='var(--amber)';t='#111';tn=true}
+    else if(lk==='ghost'){s='var(--mute)';t='var(--mute)';op=.5;dash='4 4'}
+    else if(lk==='faint'){op=.25}
+    v+=`<g opacity="${op}"><rect x="${x-w/2}" y="${y-13}" width="${w}" height="26" rx="8" stroke-width="2"${dash?` stroke-dasharray="${dash}"`:''} style="fill:${f};stroke:${s}"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="13" font-weight="600" style="fill:${t}${tn?';stroke:none':''}">${n.lab}</text></g>`}
+  return `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px;min-width:${Math.min(W,o.minW||520)}px" role="img" aria-label="${o.aria||'Cây quyết định'}">${e}${v}</svg>`;
+}
+
+/* ---------- framing: subsets two ways ---------- */
+const N3=[1,2,3];
+const SA=(function b(i,set,el){const n={lab:fmtS(set),el,k:[]};if(i===3){n.st='ans';return n}n.k.push(b(i+1,set,'bỏ '+N3[i]));n.k.push(b(i+1,[...set,N3[i]],'lấy '+N3[i]));return n})(0,[],'');
+const SB=(function b(s,set,el){const n={lab:fmtS(set),el,st:'ans',k:[]};for(let i=s;i<3;i++)n.k.push(b(i+1,[...set,N3[i]],'+'+N3[i]));return n})(0,[],'');
+$('fr-a').innerHTML=treeSVG(SA,{slot:76,dy:72,px:40,minW:480,aria:'Cây lấy hay bỏ cho tập 1, 2, 3: 15 node, 8 lá'});
+$('fr-b').innerHTML=treeSVG(SB,{slot:84,dy:72,px:44,minW:300,aria:'Cây chọn số tiếp theo cho tập 1, 2, 3: 8 node, mọi node là đáp án'});
+
+/* ---------- framing: combination sum, any vs start ---------- */
+const CS=[2,3,6,7],TG=7;
+function csFrame(useStart){const seen=new Set(),res=[];const root=(function b(r,s,v,path){const n={lab:mn(r),el:v?'+'+v:'',k:[]};
+    if(r===0){const key=[...path].sort((x,y)=>x-y).join(',');n.st=seen.has(key)?'dup':'ans';seen.add(key);res.push({path,dup:n.st==='dup'});return n}
+    for(let i=useStart?s:0;i<CS.length;i++)if(CS[i]<=r)n.k.push(b(r-CS[i],i,CS[i],[...path,CS[i]]));
+    if(!n.k.length)n.st='dead';return n})(TG,0,0,[]);return{root,res}}
+function drawFrame(m){const{root,res}=csFrame(m==='start');let cnt=0;(function c(n){cnt++;n.k.forEach(c)})(root);
+  $('fc-tree').innerHTML=treeSVG(root,{slot:52,dy:62,px:30,minW:420,aria:'Cây sinh tổ hợp có tổng bằng 7'});
+  $('fc-res').innerHTML=res.map(r=>`<span class="${r.dup?'d':'r'}"${r.dup?' title="trùng với [2, 2, 3]"':''}>${fmtA(r.path)}</span>`).join('');
+  $('fc-say').innerHTML=m==='start'?`${cnt} node, không đáp án nào trùng. Sau khi chọn 3, chỉ còn được chọn 3, 6, 7, nên đường 3 → 2 → 2 không bao giờ xuất hiện: mỗi tổ hợp chỉ được sinh theo thứ tự <b>không giảm</b>.`
+    :`${cnt} node và <b>4</b> đáp án, nhưng <code>[2, 3, 2]</code> và <code>[3, 2, 2]</code> chỉ là <code>[2, 2, 3]</code> viết theo thứ tự khác. Cây đang phân biệt thứ tự, còn đề thì không.`}
+tog('fc-mode',drawFrame);drawFrame('any');
+
+/* ---------- full combination sum tree (stepper + pruning) ---------- */
+const FULL=(function b(r,s,v,path){const n={r,s,v,path,lab:mn(r),el:v?'+'+v:'',k:[]};if(r<0)n.st='dead';else if(r===0)n.st='ans';else for(let i=s;i<CS.length;i++)n.k.push(b(r-CS[i],i,CS[i],[...path,CS[i]]));return n})(TG,0,0,[]);
+lay(FULL);
+const HT=[];(function go(n){HT.push({t:'in',n});n.k.forEach(c=>{go(c);HT.push({t:'up',n,from:c})})})(FULL);
+const htLines=[...document.querySelectorAll('#ht-code .ln')];
+const htStart=HT.findIndex(ev=>ev.t==='up'&&ev.from.st==='dead')+1;
+stepper($('ht-ctl'),HT.length,t=>{
+  const seen=new Set(),res=[];for(let k=0;k<t;k++){const ev=HT[k];if(ev.t==='in'){seen.add(ev.n);if(ev.n.st==='ans')res.push(ev.n.path)}}
+  const ev=t?HT[t-1]:null,cur=ev?ev.n:null;const onP=new Set();for(let x=cur;x;x=x.par)onP.add(x);
+  $('ht-tree').innerHTML=treeSVG(FULL,{slot:38,dy:60,px:24,minW:600,aria:'Cây gọi đệ quy đầy đủ của Combination Sum với target 7',look:n=>n===cur?'cur':!seen.has(n)?'faint':(n.st||''),on:n=>onP.has(n)&&!!n.par});
+  const path=cur?cur.path:[];
+  $('ht-path').innerHTML=path.length?path.map(v=>`<span class="p">${v}</span>`).join(''):'<span>rỗng</span>';
+  const newAns=ev&&ev.t==='in'&&ev.n.st==='ans';
+  $('ht-res').innerHTML=res.length?res.map((p,i)=>`<span class="r${newAns&&i===res.length-1?' new':''}">${fmtA(p)}</span>`).join(''):'<span>chưa có</span>';
+  $('ht-kv').innerHTML=cur?`<span>start  =</span> ${cur.s}  <span>(chọn từ ${CS[cur.s]} trở đi)</span><br><span>remain =</span> ${mn(cur.r)}`:`<span>chưa gọi</span>`;
+  let hl=[],say='Bấm “Bước tiếp” để gọi <code>explore(0, 7)</code> với <code>path = []</code>.';
+  if(ev&&ev.t==='in'){const n=ev.n;
+    if(!n.par){hl=[0];say='Gọi <code>explore(0, 7)</code>: <code>path = []</code>, còn thiếu 7. Vòng <code>for</code> sẽ lần lượt thử 2, 3, 6, 7.'}
+    else{const pre=`Chọn <b>${n.v}</b>: <code>path.append(${n.v})</code> → ${fmtA(n.path)}, gọi <code>explore(${n.s}, ${mn(n.r)})</code>.`;
+      if(n.r<0){hl=[1];say=pre+` Còn thiếu ${mn(n.r)}: đã vượt target. Ngõ cụt, <code>return</code> ngay.`}
+      else if(n.r===0){hl=[2,3];say=pre+` Còn thiếu 0: ghi <b>${fmtA(n.path)}</b> vào result rồi <code>return</code>.`}
+      else{hl=[6,7];say=pre+` Ở node mới, chỉ được chọn từ ${CS[n.s]} trở đi.`}}}
+  else if(ev){const n=ev.n,c=ev.from,idx=n.k.indexOf(c),last=idx===n.k.length-1;hl=[8];
+    say=`<code>explore(${c.s}, ${mn(c.r)})</code> trả về. <b>Hoàn tác</b>: <code>path.removeLast()</code> → ${fmtA(n.path)}, đúng như trước khi chọn ${c.v}.`+
+      (last?(n.par?' Node này đã thử hết lựa chọn, nên cũng sẽ trả về.':` Gốc đã thử hết lựa chọn. Xong: result = ${res.map(fmtA).join(', ')}.`):` Thử lựa chọn kế tiếp: ${n.k[idx+1].v}.`)}
+  htLines.forEach((l,i)=>l.classList.toggle('on',hl.includes(i)));
+  $('ht-say').innerHTML=say;
+},{auto:true,start:htStart});
+
+/* ---------- pruning ---------- */
+const allF=FULL._L.all,negs=allF.filter(n=>n.r<0).length;
+function drawPrune(m){const on=m==='on';
+  const look=n=>{if(!on)return n.st||'';if(n.r<0)return'ghost';if(n.r>0&&n.k.every(c=>c.r<0))return'dead';return n.st||''};
+  const deadOn=allF.filter(n=>n.r>0&&n.k.every(c=>c.r<0)).length;
+  $('pr-tree').innerHTML=treeSVG(FULL,{slot:38,dy:60,px:24,minW:600,look,aria:'Cây Combination Sum có và không có cắt tỉa'});
+  $('pr-stat').innerHTML=on?`<span><b>${allF.length-negs}</b>lời gọi</span><span><b>${negs}</b>lời gọi bị cắt</span><span><b>${deadOn}</b>ngõ cụt còn lại</span>`
+    :`<span><b>${allF.length}</b>lời gọi</span><span><b>${negs}</b>lời gọi chỉ để phát hiện “đã vượt”</span>`;
+  $('pr-say').innerHTML=on?`Gặp số đầu tiên lớn hơn phần còn thiếu thì <code>break</code>: không gọi, không cần hoàn tác. Còn lại ${deadOn} ngõ cụt (còn thiếu 1, nhưng số nhỏ nhất là 2): chúng được phát hiện ngay khi vòng <code>for</code> vừa bắt đầu.`
+    :`Mọi nhánh đều được gọi rồi mới phát hiện vượt target ở lời gọi con. ${negs} trên ${allF.length} lời gọi không làm gì ngoài <code>return</code>.`}
+tog('pr-mode',drawPrune);drawPrune('off');
+
+/* ---------- dedup: subsets II ---------- */
+const DV=[1,2,2],DN=['1','2','2′'];
+const DT=(function b(s,idx,el,skip,self){const n={lab:idx.length?'{'+idx.map(i=>DN[i]).join(',')+'}':'∅',el,idx,skip,self,k:[]};for(let i=s;i<3;i++){const me=i>s&&DV[i]===DV[i-1];n.k.push(b(i+1,[...idx,i],'+'+DN[i],skip||me,me))}return n})(0,[],'',false,false);
+lay(DT);
+function drawDedup(m){const on=m==='on';const seen=new Set(),dup=new Set();
+  for(const n of DT._L.all){const key=n.idx.map(i=>DV[i]).join(',');if(seen.has(key))dup.add(n);seen.add(key)}
+  $('dd-tree').innerHTML=treeSVG(DT,{slot:92,dy:72,px:46,minW:420,aria:'Cây sinh tập con của 1, 2, 2',look:n=>on?(n.skip?'ghost':'ans'):(dup.has(n)?'dup':'ans')});
+  const list=DT._L.all.slice().filter(n=>!on||!n.skip);
+  $('dd-res').innerHTML=list.map(n=>{const vals=n.idx.map(i=>DV[i]);return `<span class="${!on&&dup.has(n)?'d':'r'}">${fmtA(vals)}</span>`}).join('');
+  $('dd-say').innerHTML=on?'Sau khi sắp xếp, ở mỗi node, nếu <code>a[i]</code> bằng <code>a[i − 1]</code> và <code>i &gt; start</code> thì bỏ qua: hai nhánh “+2′” bị cắt, vì nhánh “+2” ngay bên trái đã mọc ra đúng cây con đó. Nhánh {2} → {2, 2′} vẫn giữ: 2′ ở đây là lựa chọn <em>đầu tiên</em> của node {2}. Còn <b>6</b> tập con, không trùng.'
+    :'8 tập con nhưng chỉ 6 giá trị khác nhau. Gốc thử “+2” rồi “+2′”: hai nhánh anh em có cùng giá trị nên cho ra cùng một cây con, {2′} lặp lại {2}. Tương tự {1, 2′} lặp lại {1, 2}.'}
+tog('dd-mode',drawDedup);drawDedup('off');
+
+/* ---------- combinations, permutations, palindrome ---------- */
+const CB=(function b(s,path,el){const n={lab:'['+path.join(',')+']',el,k:[]};if(path.length===2){n.st='ans';return n}const need=2-path.length;for(let i=s;i<=4;i++){const c=b(i+1,[...path,i],'+'+i);if(i>4-need+1)c.cut=true;n.k.push(c)}if(!n.k.length)n.st='dead';return n})(1,[],'');
+$('cb-tree').innerHTML=treeSVG(CB,{slot:64,dy:70,px:36,minW:440,look:n=>n.cut?'ghost':(n.st||''),aria:'Cây chọn 2 số trong 1 tới 4, nhánh 4 bị cắt'});
+const PM=(function b(path,el){const n={lab:'['+path.join(',')+']',el,k:[]};if(path.length===3){n.st='ans';return n}for(const x of N3)if(!path.includes(x))n.k.push(b([...path,x],'+'+x));return n})([],'');
+$('pm-tree').innerHTML=treeSVG(PM,{slot:80,dy:70,px:42,minW:460,aria:'Cây hoán vị của 1, 2, 3'});
+const PS='aab',isP=s=>s===[...s].reverse().join('');
+const PP=(function b(st,path,el){const rem=PS.slice(st);const n={lab:rem||path.join('|'),el,k:[]};if(!rem){n.st='ans';return n}for(let e=st+1;e<=PS.length;e++){const piece=PS.slice(st,e);if(isP(piece))n.k.push(b(e,[...path,piece],'"'+piece+'"'));else n.k.push({lab:'✂',el:'"'+piece+'" ✕',st:'ghost',k:[]})}return n})(0,[],'');
+$('pp-tree').innerHTML=treeSVG(PP,{slot:76,dy:70,px:44,minW:420,aria:'Cây chia chuỗi aab thành các đoạn đối xứng'});
+
+/* ---------- n-queens ---------- */
+function dg(fn,hi,title,col){let o='';for(let r=0;r<4;r++)for(let c=0;c<4;c++){const v=fn(r,c),on=v===hi;o+=`<rect x="${10+c*44}" y="${30+r*44}" width="42" height="42" rx="4" style="fill:${on?col:'var(--soft)'}"/><text x="${31+c*44}" y="${57+r*44}" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="15" font-weight="600" style="fill:${on?'#fff':'currentColor'}${on?';stroke:none':''}">${mn(v)}</text>`}
+  return `<svg viewBox="0 0 196 212" role="img" aria-label="${title}"><text x="10" y="18" font-size="13" font-weight="700" fill="currentColor">${title}</text>${o}</svg>`}
+$('nq-diag').innerHTML=dg((r,c)=>r-c,-1,'r − c: chéo ↘ cùng giá trị','var(--blue)')+dg((r,c)=>r+c,3,'r + c: chéo ↙ cùng giá trị','var(--red)');
+const NQ=4,QE=[];
+(function(){const q=[],cols=new Set(),d1=new Set(),d2=new Set();(function place(r){if(r===NQ){QE.push({t:'found',q:[...q]});return}let rej=[];
+  for(let c=0;c<NQ;c++){const why=[];if(cols.has(c))why.push('cùng cột');if(d1.has(r-c))why.push('chéo ↘');if(d2.has(r+c))why.push('chéo ↙');if(why.length){rej.push({c,why});continue}
+    q.push(c);cols.add(c);d1.add(r-c);d2.add(r+c);QE.push({t:'place',r,c,rej,q:[...q]});rej=[];place(r+1);q.pop();cols.delete(c);d1.delete(r-c);d2.delete(r+c);QE.push({t:'remove',r,c,q:[...q]})}
+  QE.push({t:'end',r,rej,q:[...q]})})(0)})();
+const setS=a=>'{'+[...new Set(a)].sort((x,y)=>x-y).map(mn).join(', ')+'}';
+stepper($('nq-ctl'),QE.length,t=>{
+  const ev=t?QE[t-1]:null,q=ev?ev.q:[];const found=[];for(let k=0;k<t;k++)if(QE[k].t==='found')found.push(QE[k].q);
+  const C=58,OX=62,OY=8;let o='';
+  for(let r=0;r<NQ;r++){for(let c=0;c<NQ;c++){const x=OX+c*C,y=OY+r*C,occ=q[r]===c,att=!occ&&q.some((qc,qr)=>qc===c||qr-qc===r-c||qr+qc===r+c);
+      o+=`<rect x="${x}" y="${y}" width="${C}" height="${C}" style="fill:${att?'color-mix(in srgb,var(--red) 16%,var(--bg))':(r+c)%2?'var(--soft)':'var(--bg)'};stroke:var(--line)" stroke-width="1"/>`}
+    o+=`<text x="${OX-10}" y="${OY+r*C+C/2+5}" text-anchor="end" font-size="13" fill="currentColor">hàng ${r}</text>`}
+  for(let c=0;c<NQ;c++)o+=`<text x="${OX+c*C+C/2}" y="${OY+NQ*C+20}" text-anchor="middle" font-size="13" fill="currentColor">cột ${c}</text>`;
+  o+=`<rect x="${OX}" y="${OY}" width="${NQ*C}" height="${NQ*C}" fill="none" stroke-width="${ev&&ev.t==='found'?5:2}" style="stroke:${ev&&ev.t==='found'?'var(--green)':'var(--ink)'}"/>`;
+  if(ev&&ev.t==='end'&&ev.r<NQ)o+=`<rect x="${OX+2}" y="${OY+ev.r*C+2}" width="${NQ*C-4}" height="${C-4}" fill="none" stroke-width="3" stroke-dasharray="6 4" style="stroke:var(--red)"/>`;
+  if(ev&&(ev.t==='place'||ev.t==='end'))for(const x of ev.rej)o+=`<text x="${OX+x.c*C+C/2}" y="${OY+ev.r*C+C/2+9}" text-anchor="middle" font-size="26" font-weight="800" style="fill:var(--red)">✕</text>`;
+  if(ev&&ev.t==='remove')o+=`<circle cx="${OX+ev.c*C+C/2}" cy="${OY+ev.r*C+C/2}" r="22" fill="none" stroke-width="3" stroke-dasharray="5 4" style="stroke:var(--amber)"/><text x="${OX+ev.c*C+C/2}" y="${OY+ev.r*C+C/2+12}" text-anchor="middle" font-size="34" opacity=".3" fill="currentColor">♛</text>`;
+  q.forEach((c,r)=>{const hot=ev&&ev.t==='place'&&ev.r===r;const cx=OX+c*C+C/2,cy=OY+r*C+C/2;if(hot)o+=`<circle cx="${cx}" cy="${cy}" r="24" style="fill:var(--amber)"/>`;
+    o+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="34" style="fill:${ev.t==='found'?'var(--green)':hot?'#111':'var(--ink)'}${hot?';stroke:none':''}">♛</text>`});
+  $('nq-board').innerHTML=`<svg viewBox="0 0 ${OX+NQ*C+10} ${OY+NQ*C+30}" style="max-width:340px" role="img" aria-label="Bàn cờ 4×4 với các quân hậu đã đặt">${o}</svg>`;
+  $('nq-kv').innerHTML=`<span>queens =</span> ${fmtA(q)}<br><span>cols   =</span> ${setS(q)}<br><span>r − c  =</span> ${setS(q.map((c,r)=>r-c))}<br><span>r + c  =</span> ${setS(q.map((c,r)=>r+c))}`;
+  $('nq-res').innerHTML=found.length?found.map((s,i)=>`<span class="r${ev&&ev.t==='found'&&i===found.length-1?' new':''}">${fmtA(s)}</span>`).join(''):'<span>chưa có</span>';
+  const rj=x=>x.rej.length?'loại '+x.rej.map(y=>`cột ${y.c} (${y.why.join(', ')})`).join('; ')+'. ':'';
+  let say='Gọi <code>place(0)</code>: bàn trống, bắt đầu từ hàng 0.';
+  if(ev){if(ev.t==='place')say=`Hàng ${ev.r}: ${rj(ev)}Cột <b>${ev.c}</b> an toàn: đặt quân, thêm ${ev.c} vào cols, ${mn(ev.r-ev.c)} vào r − c, ${ev.r+ev.c} vào r + c. Gọi <code>place(${ev.r+1})</code>.`;
+    else if(ev.t==='remove')say=`<code>place(${ev.r+1})</code> trả về. <b>Hoàn tác</b>: gỡ quân ở hàng ${ev.r}, cột ${ev.c}, xoá khỏi ba tập. Thử cột tiếp theo của hàng ${ev.r}.`;
+    else if(ev.t==='found')say=`Đã tới hàng ${NQ}: cả ${NQ} quân đứng an toàn. Ghi đáp án <b>${fmtA(ev.q)}</b> rồi trả về.`;
+    else say=`Hàng ${ev.r}: ${rj(ev)}Đã thử hết cột.`+(ev.r===0?` Gốc duyệt xong: tìm được <b>${found.length}</b> đáp án.`:` <code>place(${ev.r})</code> trả về: <b>quay lui</b> lên hàng ${ev.r-1}.`)}
+  $('nq-say').innerHTML=say;
+},{auto:true,start:QE.findIndex(e=>e.t==='end')+1});
+}
+</script>
