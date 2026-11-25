@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tư duy Tham lam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday learning: calm, exact, a patient teacher; companion to the DP page
+   IDEA the same metro map: greedy reasoning is a line, with an exit line to DP where greedy breaks
+   PICTURE route map of 6 greedy stations, pattern line branching at Tiêu chí, exit line to DP at Phản ví dụ
+   COLOUR white ground, black ink; red = thinking line, blue = pattern line, green = practice / correct, amber = the greedy path, ink = the DP exit
+   TYPE Be Vietnam Pro 800 + Be Vietnam Pro, Roboto Mono for code
+   LAYOUT title and conclusion on top, map full width; every section hangs off a thick left rail */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0e1116);--ink:light-dark(#111418,#eceff3);--mute:light-dark(#566070,#9ba5b5);--line:light-dark(#dfe3e8,#2a313c);--soft:light-dark(#f3f5f8,#161b23);--red:#e6261f;--blue:light-dark(#0a5cff,#5b93ff);--green:light-dark(#00a05a,#22c47c);--amber:#ffb400;--mono:"Roboto Mono",ui-monospace,Menlo,monospace;--pl:76px;--rx:24px;--rw:10px}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:76px;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Be Vietnam Pro",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:1120px;margin:0 auto;padding:0 max(4vw,16px)}
+h1,h2,h3{font-weight:800;letter-spacing:-.02em;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px);max-width:22ch}
+h2{font-size:clamp(25px,3vw,32px);margin-bottom:16px;max-width:32ch}
+h3{font-size:19px;margin:28px 0 8px;letter-spacing:-.01em}
+p,ul,ol{max-width:70ch}
+p{margin:0 0 14px}
+a{color:inherit}
+code{font-family:var(--mono);font-size:.9em;background:var(--soft);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.cap{font-size:14px;color:var(--mute)}
+header.hero{padding:44px 0 8px}
+.lede{font-size:19px;max-width:64ch;margin:18px 0 6px}
+.fig{position:relative}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.map{height:410px;margin:8px 0 4px}
+@media(max-width:1039px){.map{height:480px}}
+svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+.stn{cursor:pointer}
+.stn:focus{outline:none}
+.stn:focus-visible circle{stroke:var(--amber)}
+nav.jump{position:relative;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.jump .scroll{display:flex;gap:6px;padding:10px 0;white-space:nowrap}
+nav.jump a{flex:none;text-decoration:none;font-size:14px;font-weight:600;padding:6px 12px 6px 10px;border-radius:99px;border:1px solid var(--line);display:inline-flex;align-items:center;gap:7px}
+nav.jump a::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c,var(--red))}
+nav.jump a:hover{border-color:var(--ink)}
+@media(min-width:900px){nav.jump{position:sticky;top:0}}
+.scroll{overflow-x:auto}
+pre{overflow-x:auto}
+.st{position:relative;padding:44px 0 36px var(--pl);--c:var(--red)}
+.st::before{content:"";position:absolute;left:var(--rx);top:0;bottom:0;width:var(--rw);background:var(--c)}
+.st>h2{position:relative}
+.st>h2::before{content:"";position:absolute;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 15px);top:calc(.55em - 15px);width:30px;height:30px;border-radius:50%;background:var(--bg);border:7px solid var(--c);box-sizing:border-box}
+.st.x>h2::before{border-color:var(--ink);width:36px;height:36px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 18px);top:calc(.55em - 18px)}
+.st.blue{--c:var(--blue)}
+.st.green{--c:var(--green)}
+.st.ink{--c:var(--ink)}
+.st.first::before{top:52px}
+.st.last::before{bottom:auto;height:60px}
+.line-name{font-size:14px;font-weight:700;color:var(--c);margin:0 0 6px}
+@media(max-width:600px){:root{--pl:46px;--rx:12px;--rw:7px}.st>h2::before{width:24px;height:24px;border-width:6px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 12px);top:calc(.55em - 12px)}.st.x>h2::before{width:28px;height:28px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 14px);top:calc(.55em - 14px)}}
+.key{background:var(--soft);border-radius:14px;padding:18px 22px;margin:20px 0;max-width:76ch}
+.key>strong:first-child{display:block;font-size:17px;margin-bottom:4px}
+.key p:last-child,.key ol:last-child{margin-bottom:0}
+.eq{font-family:var(--mono);font-size:17px;background:var(--soft);padding:14px 18px;border-radius:12px;overflow-x:auto;white-space:nowrap;margin:14px 0;max-width:76ch}
+.eq b{color:var(--red);font-weight:600}
+.eq .g{color:light-dark(#9a6a00,var(--amber));font-weight:600}
+.panel{border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0}
+figure{margin:20px 0}
+figcaption{font-size:14px;color:var(--mute);margin-top:10px;max-width:70ch}
+.svgbox{overflow-x:auto}
+.svgbox svg{display:block;width:100%;height:auto}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media(max-width:900px){.two{grid-template-columns:minmax(0,1fr);gap:0}}
+ul.sig{list-style:none;padding:0;margin:12px 0}
+ul.sig li{position:relative;padding-left:28px;margin:8px 0}
+ul.sig li::before{content:"";position:absolute;left:2px;top:.45em;width:14px;height:14px;border-radius:50%;border:4px solid var(--c,var(--red));box-sizing:border-box}
+ul.sig.no li::before{border-color:var(--mute);border-style:dashed}
+table.tbl{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0}
+.tbl th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;border-bottom:2px solid var(--ink);padding:8px 10px 8px 0}
+.tbl td{border-bottom:1px solid var(--line);padding:10px 10px 10px 0;vertical-align:top}
+.tbl td:first-child{font-weight:700}
+.tbl code{white-space:nowrap}
+.codewrap{position:relative;margin:14px 0;max-width:80ch}
+.codewrap pre{background:var(--soft);border-radius:12px;padding:16px 18px;margin:0;font:14.5px/1.6 var(--mono)}
+.codewrap .copy{position:absolute;top:8px;right:8px;font:600 13px "Be Vietnam Pro",sans-serif;min-height:32px;padding:4px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.codewrap .lbl{font-size:14px;font-weight:700;margin:0 0 6px}
+.kw{color:var(--blue);font-weight:600}
+.cm{color:var(--mute);font-style:italic}
+.say{font:16px/1.55 "Be Vietnam Pro",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:3.2em;margin:12px 0;padding:10px 14px;border-radius:10px;background:var(--soft);overflow-wrap:anywhere}
+.say b{color:var(--red)}
+.say b.ok{color:var(--green)}
+.tog{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.tog .tl{font-size:14px;font-weight:700;color:var(--mute);margin-right:4px;min-width:4.5em}
+.tog button,.btn{font:600 15px "Be Vietnam Pro",sans-serif;min-height:44px;padding:8px 16px;border-radius:22px;border:2px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer}
+.tog button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.btn[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--mute);margin:10px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:22px;height:14px;border-radius:4px;display:inline-block;border:2px solid var(--line)}
+.sw.g{background:var(--green);border-color:var(--green)}
+.sw.n{background:var(--line)}
+.sw.o{border:3px solid var(--blue);background:transparent}
+.sw.lg{height:5px;border:0;background:var(--green);border-radius:3px}
+.sw.la{height:0;border:0;border-top:3px dashed var(--amber);border-radius:0}
+.sw.lf{height:2px;border:0;background:var(--mute);opacity:.6}
+.sw.ok{background:color-mix(in srgb,var(--green) 22%,transparent);border-color:var(--green)}
+.sw.bad{background:var(--red);border-color:var(--red)}
+.sw.fail{background:var(--ink);border-color:var(--ink)}
+.dag{height:300px}
+.lab{height:340px}
+.stat{font-size:15px;margin:10px 0 0}
+.coins-grid{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}
+.coins-grid button{width:40px;height:40px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font:600 14px "Be Vietnam Pro",sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;padding:0}
+.coins-grid .ok{background:color-mix(in srgb,var(--green) 16%,transparent);border-color:color-mix(in srgb,var(--green) 55%,transparent)}
+.coins-grid .bad{background:var(--red);border-color:var(--red);color:#fff}
+.coins-grid .fail{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.coins-grid .none{opacity:.35}
+.coins-grid .sel{outline:3px solid var(--amber);outline-offset:1px}
+.inrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.inrow input{font:16px var(--mono);min-height:44px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:15em;max-width:100%}
+.err{color:var(--red);font-size:14px}
+.kb{display:grid;gap:12px;margin:14px 0}
+.kb .row{display:grid;grid-template-columns:minmax(0,13em) minmax(0,1fr) 4.5em;gap:12px;align-items:center}
+.kb .nm{font-size:14px;font-weight:600}
+.kb .bar{display:flex;height:42px;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.kb .seg{display:grid;place-items:center;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;border-right:2px solid var(--bg)}
+.kb .sA{background:var(--blue);color:#fff}
+.kb .sB{background:var(--green);color:#fff}
+.kb .sC{background:var(--amber);color:#111}
+.kb .sE{background:repeating-linear-gradient(45deg,transparent 0 6px,var(--line) 6px 8px);color:var(--mute)}
+.kb .val{font-weight:800;font-size:19px;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:600px){.kb .row{grid-template-columns:minmax(0,1fr) 4em}.kb .nm{grid-column:1/-1}}
+.route{list-style:none;padding:0;margin:18px 0;position:relative;max-width:80ch}
+.route>li{position:relative;padding:0 0 24px 40px}
+.route>li::before{content:"";position:absolute;left:9px;top:8px;bottom:-8px;width:6px;background:var(--c,var(--green))}
+.route>li:last-child::before{display:none}
+.route>li::after{content:"";position:absolute;left:0;top:2px;width:24px;height:24px;border-radius:50%;background:var(--bg);border:6px solid var(--c,var(--green));box-sizing:border-box}
+.route strong{display:block}
+.route .pb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.route .pb span{font-size:14px;border:1px solid var(--line);border-radius:8px;padding:2px 9px}
+.route .pb .dp{border:2px solid var(--ink);font-weight:700}
+.route .pb .gr{border:2px solid var(--green);font-weight:700;color:var(--green)}
+.swap{display:grid;gap:10px;margin:14px 0}
+.swap .r{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--mono)}
+.swap .ch{padding:8px 12px;border-radius:9px;border:2px solid var(--line);font-weight:600}
+.swap .ch.dim{color:var(--mute);border-style:dashed;font-family:"Be Vietnam Pro",sans-serif;font-size:14px;font-weight:500}
+.swap .ch.a{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 15%,transparent)}
+.swap .ch.b{border-color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent)}
+.swap .res{margin-left:6px;font-weight:700}
+.jumprow{display:grid;grid-template-columns:repeat(10,minmax(40px,1fr));gap:5px;min-width:440px}
+.jumprow .c{display:grid;justify-items:center;gap:4px}
+.jumprow b{display:grid;place-items:center;width:100%;height:46px;border-radius:9px;font-size:18px;color:#fff}
+.jumprow small{font-size:13px;color:var(--mute);white-space:nowrap}
+footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color:var(--mute)}
+@media(max-width:600px){table{font-size:13px}th,td{padding:6px 4px}.stack thead{display:none}.stack tr{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0 3px 8.5em;text-align:left;font-size:14px}.stack td::before{content:attr(data-l);float:left;width:8em;margin-left:-8.5em;color:var(--mute);font-weight:600;font-size:13px;line-height:1.35;padding-top:2px}.stack td:first-child{padding-left:0;font-size:15px}.stack td:first-child::before{display:none}.lede{font-size:17px}.eq{font-size:15px}.tog .tl{min-width:100%}}
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <h1>Tư duy Tham lam: chọn một lần, không quay lại, và biết khi nào điều đó sai</h1>
+  <p class="lede">Thuật toán tham lam (greedy) ở mỗi bước chỉ chọn <strong>một</strong> lựa chọn trông tốt nhất rồi đi tiếp, không bao giờ thử lại. Vì vậy nó nhanh và code ngắn, nhưng dễ sai. Kỹ năng thật sự không nằm ở code mà ở <strong>quy trình kiểm định</strong>: đề xuất tiêu chí, săn phản ví dụ, chứng minh bằng hoán đổi. Tiêu chí nào không qua được quy trình thì rẽ sang Quy hoạch động.</p>
+  <div class="fig map"><svg id="map" role="img" aria-label="Bản đồ tuyến tư duy tham lam: sáu ga trên tuyến đỏ, tuyến xanh rẽ từ ga Tiêu chí tới năm mẫu, tuyến đen rẽ từ ga Phản ví dụ sang Quy hoạch động"></svg></div>
+  <p class="cap">Bấm vào một ga để tới phần đó. Ga <strong>Phản ví dụ</strong> là ngã rẽ quan trọng nhất: tìm được phản ví dụ cho mọi tiêu chí thì đi tuyến đen sang DP. Tài liệu này tiếp nối <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Tư duy Quy hoạch động</a>; code mẫu viết bằng Swift.</p>
+</header>
+
+<nav class="jump" aria-label="Mục lục"><div class="wrap"><div class="scroll">
+  <a href="#ban-chat">Bản chất</a><a href="#mo-hinh">Mô hình hoá</a><a href="#tieu-chi">Tiêu chí</a><a href="#phan-vi-du">Phản ví dụ</a><a href="#chung-minh">Chứng minh</a><a href="#cai-dat">Cài đặt</a><a href="#kiem-chung">Kiểm chứng</a>
+  <a href="#tham-lam-hay-dp" style="--c:var(--ink)">Tham lam hay DP?</a>
+  <a href="#hoan-doi-ke" style="--c:var(--blue)">Hoán đổi kề</a><a href="#heap" style="--c:var(--blue)">Hàng đợi ưu tiên</a><a href="#tam-voi" style="--c:var(--blue)">Tầm với</a><a href="#ghep-cap" style="--c:var(--blue)">Ghép cặp</a><a href="#loi-nhuan" style="--c:var(--blue)">Cộng dồn</a><a href="#bang-tra" style="--c:var(--blue)">Bảng tra</a>
+  <a href="#bi-ket" style="--c:var(--green)">Khi bị kẹt</a><a href="#lo-trinh" style="--c:var(--green)">Lộ trình</a><a href="#mau" style="--c:var(--green)">Mẫu suy luận</a>
+</div></div></nav>
+
+<main class="wrap">
+
+<!-- ============ BẢN CHẤT ============ -->
+<section class="st first" id="ban-chat">
+  <p class="line-name">Tuyến tư duy · ga xuất phát</p>
+  <h2>Tham lam là DP chỉ đi đúng một cạnh ở mỗi node</h2>
+  <p>Nhớ lại mô hình của Quy hoạch động: các bài con là node, các lựa chọn là cạnh, tạo thành một DAG. DP <strong>thử mọi cạnh</strong> đi ra từ một node rồi lấy kết quả tốt nhất. Tham lam thì ở mỗi node <strong>chỉ đi theo một cạnh</strong>, cạnh trông tốt nhất ngay lúc đó, và không quay lại.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Chọn hệ đồng xu">
+      <span class="tl">Hệ đồng</span>
+      <button type="button" data-d="a" aria-pressed="true">{1, 3, 4} · tổng 6</button>
+      <button type="button" data-d="b" aria-pressed="false">{1, 2, 5} · tổng 9</button>
+    </div>
+    <div class="fig dag"><svg id="dag" role="img" aria-label="Đồ thị các bài con của bài đổi tiền, với đường đi tham lam và đường đi tối ưu của DP"></svg></div>
+    <div class="legend"><span><i class="sw lg"></i>đường DP (tối ưu)</span><span><i class="sw la"></i>đường tham lam: luôn lấy đồng lớn nhất</span><span><i class="sw lf"></i>các lựa chọn khác</span></div>
+    <p class="stat" id="dag-stat"></p>
+  </div>
+  <p>Với hệ {1, 3, 4}, cạnh “lấy đồng 4” trông hấp dẫn nhất ở node 6, nhưng nó dẫn tới node 2, mà từ 2 chỉ còn đường dài. Với hệ {1, 2, 5}, cạnh tham lam luôn nằm trên một đường tối ưu, nên tham lam đúng. <strong>Cùng một kiểu bài, cùng một tiêu chí, nhưng đúng hay sai phụ thuộc vào cấu trúc của dữ liệu.</strong></p>
+  <div class="eq">DP:        f(x) = 1 + <b>min</b> trên MỌI c ≤ x của f(x − c)<br>Tham lam:  f(x) = 1 + f(x − <span class="g">c*</span>)   với <span class="g">c*</span> = đồng lớn nhất ≤ x</div>
+  <div class="key"><strong>Hai tính chất quyết định</strong><p>Cả DP và tham lam đều cần <strong>cấu trúc con tối ưu</strong>: chọn xong một bước, phần còn lại là bài cùng dạng và phải được giải tối ưu. Tham lam cần thêm <strong>tính chất lựa chọn tham lam</strong> (greedy-choice property): <em>luôn tồn tại một lời giải tối ưu có chứa lựa chọn tham lam</em>. Có tính chất này thì đi một cạnh là đủ. Không có thì phải thử mọi cạnh, tức là DP.</p></div>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th></th><th>Quy hoạch động</th><th>Tham lam</th></tr></thead>
+    <tbody>
+      <tr><td>Ở mỗi bước</td><td>Thử mọi lựa chọn, so sánh</td><td>Cam kết một lựa chọn, không quay lại</td></tr>
+      <tr><td>Cần nhớ</td><td>Bảng kết quả mọi bài con</td><td>Gần như không gì (vài biến)</td></tr>
+      <tr><td>Thường tốn</td><td>số trạng thái × số lựa chọn</td><td>O(n log n) cho sắp xếp, rồi O(n)</td></tr>
+      <tr><td>Đúng khi</td><td>Có cấu trúc con tối ưu</td><td>Có thêm tính chất lựa chọn tham lam, <em>phải chứng minh</em></td></tr>
+      <tr><td>Rủi ro</td><td>Chậm hoặc tốn bộ nhớ</td><td>Sai một cách im lặng, chạy đúng ví dụ của đề nhưng sai bộ test ẩn</td></tr>
+    </tbody>
+  </table></div>
+  <p>Hệ quả quan trọng nhất: <strong>một lời giải tham lam đúng luôn là một lời giải DP đã được “cắt tỉa”</strong>. Nếu không chắc, viết DP gần như luôn an toàn hơn; tham lam là phần thưởng khi bạn chứng minh được rằng chỉ cần một cạnh.</p>
+</section>
+
+<!-- ============ MÔ HÌNH HOÁ ============ -->
+<section class="st" id="mo-hinh">
+  <h2>Mô hình hoá: lời giải là một chuỗi lựa chọn, mỗi lựa chọn thu nhỏ bài toán</h2>
+  <p>Ga này giống hệt ga Lựa chọn của DP. Bài ví dụ sẽ đi theo ta suốt tuyến đỏ:</p>
+  <div class="key"><strong>Xếp lịch phòng họp (Activity Selection, LeetCode 435 dạng ngược)</strong><p>Một phòng họp và danh sách cuộc họp <code>[bắt đầu, kết thúc)</code>. Xếp được <strong>nhiều cuộc họp nhất</strong> sao cho không cuộc nào trùng giờ. Hai cuộc chạm nhau như <code>[1,3)</code> và <code>[3,5)</code> không tính là trùng. LeetCode 435 hỏi số cuộc phải bỏ đi ít nhất, tức là n trừ đáp án này.</p></div>
+  <ul class="sig">
+    <li><strong>Lựa chọn</strong>: cuộc họp <em>đầu tiên</em> được xếp là cuộc nào?</li>
+    <li><strong>Sau khi chọn</strong> cuộc họp k: phần còn lại là “xếp nhiều nhất trong các cuộc bắt đầu từ khi k kết thúc trở đi”. Cùng dạng với bài gốc: có cấu trúc con tối ưu.</li>
+    <li><strong>DP sẽ làm gì</strong>: thử mọi cuộc làm cuộc đầu tiên, đệ quy, lấy max. <strong>Tham lam hỏi</strong>: có cách nào biết ngay cuộc nào nên là cuộc đầu tiên, không cần thử?</li>
+  </ul>
+  <p>Câu hỏi cuối chính là việc của ga tiếp theo: tìm một <strong>tiêu chí</strong> chọn ra đúng cạnh cần đi.</p>
+</section>
+
+<!-- ============ TIÊU CHÍ ============ -->
+<section class="st x" id="tieu-chi">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang tuyến mẫu</p>
+  <h2>Tiêu chí: liệt kê vài cách “chọn cái tốt nhất”, đừng tin cách đầu tiên</h2>
+  <p>Tiêu chí tham lam gần như luôn là <strong>một thứ tự sắp xếp</strong> (“xét theo thứ tự X”) hoặc <strong>một phép chọn cực trị</strong> (“lấy cái có X nhỏ nhất hiện có”). Cách sinh ứng viên: với mỗi thuộc tính của phần tử, thử cả nhỏ nhất và lớn nhất; rồi thêm các thuộc tính ghép như hiệu, tỉ lệ, số xung đột.</p>
+  <p>Với lịch họp, bốn ứng viên ai cũng nghĩ tới:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Tiêu chí</th><th>Trực giác đằng sau</th><th>Câu hỏi nên đặt</th></tr></thead>
+    <tbody>
+      <tr><td>Bắt đầu sớm nhất</td><td>Dùng phòng ngay từ đầu, không lãng phí</td><td>Nếu cuộc bắt đầu sớm lại kéo dài cả ngày?</td></tr>
+      <tr><td>Ngắn nhất</td><td>Cuộc ngắn chiếm ít thời gian</td><td>Nếu cuộc ngắn lại nằm vắt giữa hai cuộc khác?</td></tr>
+      <tr><td>Ít xung đột nhất</td><td>Chọn cuộc “làm phiền” ít cuộc khác nhất</td><td>Nếu nó làm phiền đúng những cuộc quan trọng?</td></tr>
+      <tr><td>Kết thúc sớm nhất</td><td>Trả phòng sớm nhất, để lại nhiều thời gian nhất cho phần sau</td><td>Có khi nào kết thúc sớm mà vẫn thiệt?</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Câu hỏi dẫn đường tốt nhất</strong><p>“Lựa chọn nào <strong>để lại nhiều chỗ nhất cho tương lai</strong>?” Lựa chọn đúng thường là lựa chọn làm hẹp các khả năng còn lại ít nhất. Kết thúc sớm nhất trả lời đúng câu này; ba tiêu chí kia tối ưu một thứ khác (sớm, ngắn, ít đụng) chỉ <em>có liên quan</em> tới tương lai.</p></div>
+</section>
+
+<!-- ============ PHẢN VÍ DỤ ============ -->
+<section class="st x" id="phan-vi-du">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang DP</p>
+  <h2>Phản ví dụ: cố tình làm cho tiêu chí thua, với càng ít phần tử càng tốt</h2>
+  <p>Một phản ví dụ là một input nhỏ mà tham lam cho kết quả kém hơn tối ưu. Tìm được một cái là tiêu chí bị loại ngay, không cần tranh luận. Công thức dựng phản ví dụ: <strong>làm cho lựa chọn tham lam trông hấp dẫn theo tiêu chí, nhưng chặn mất hai lựa chọn tốt khác</strong>.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Tiêu chí" id="lab-rule">
+      <span class="tl">Tiêu chí</span>
+      <button type="button" data-r="start">Bắt đầu sớm nhất</button><button type="button" data-r="short">Ngắn nhất</button><button type="button" data-r="few">Ít xung đột nhất</button><button type="button" data-r="end">Kết thúc sớm nhất</button>
+    </div>
+    <div class="tog" role="group" aria-label="Bộ thử" id="lab-case">
+      <span class="tl">Bộ thử</span>
+      <button type="button" data-c="A">Bộ A</button><button type="button" data-c="B">Bộ B</button><button type="button" data-c="C">Bộ C</button><button type="button" data-c="R">Ngẫu nhiên</button>
+    </div>
+    <div class="fig lab" id="labfig"><svg id="labsvg" role="img" aria-label="Các cuộc họp trên trục thời gian, cuộc được tham lam chọn tô xanh lá kèm thứ tự chọn"></svg></div>
+    <p class="say" id="labsay" aria-live="polite"></p>
+    <div class="inrow"><button type="button" class="btn" id="lab-opt" aria-pressed="false">Hiện một lời giải tối ưu</button><button type="button" class="btn" id="lab-new">Tạo bộ ngẫu nhiên mới</button></div>
+    <div class="legend"><span><i class="sw g"></i>tham lam chọn (số = thứ tự chọn)</span><span><i class="sw n"></i>bị bỏ qua</span><span><i class="sw o"></i>một lời giải tối ưu</span></div>
+  </div>
+  <p>Thử lần lượt: Bộ A hạ “bắt đầu sớm nhất”, Bộ B hạ “ngắn nhất”, Bộ C hạ “ít xung đột nhất”. Rồi chọn “kết thúc sớm nhất” và bấm “Tạo bộ ngẫu nhiên mới” bao nhiêu lần tuỳ ý: nó không thua lần nào. Đó là bằng chứng thực nghiệm, chưa phải chứng minh. Chứng minh là việc của ga sau.</p>
+  <div class="key"><strong>Mẹo săn phản ví dụ bằng tay</strong><p>Bắt đầu với 2 phần tử, rồi 3, rồi 4. Đặt phần tử “mồi” (thắng theo tiêu chí) vào vị trí gây hại nhiều nhất, rồi đặt các phần tử bị nó chặn. Bộ C cần tới 11 cuộc họp, nên với tiêu chí phức tạp hãy để máy tìm: viết vét cạn và chạy hàng nghìn input ngẫu nhiên (ga <a href="#kiem-chung">Kiểm chứng</a>).</p></div>
+  <p><strong>Nếu mọi tiêu chí bạn nghĩ ra đều có phản ví dụ</strong>, đó là tín hiệu mạnh rằng bài cần DP. Đi theo tuyến đen sang <a href="#tham-lam-hay-dp">Tham lam hay DP?</a></p>
+</section>
+
+<!-- ============ CHỨNG MINH ============ -->
+<section class="st" id="chung-minh">
+  <h2>Chứng minh: đổi một phần của lời giải tối ưu thành lựa chọn tham lam mà không thiệt</h2>
+  <p>Không tìm được phản ví dụ chưa có nghĩa là đúng. Kỹ thuật chứng minh dùng được cho phần lớn bài tham lam là <strong>lập luận hoán đổi</strong> (exchange argument). Nó luôn có bốn bước:</p>
+  <ol>
+    <li>Gọi <strong>g</strong> là lựa chọn tham lam đầu tiên, <strong>O</strong> là một lời giải tối ưu <em>bất kỳ</em>.</li>
+    <li>Nếu O đã chứa g thì xong bước này.</li>
+    <li>Nếu không, tìm phần tử <strong>o</strong> trong O đang “đóng vai” của g (ở đây: cuộc họp đầu tiên của O). Thay o bằng g, được <strong>O′</strong>.</li>
+    <li>Chứng minh O′ vẫn hợp lệ và không tệ hơn O. Vậy có một lời giải tối ưu chứa g. Phần còn lại là bài cùng dạng nhỏ hơn, lặp lại lập luận (quy nạp).</li>
+  </ol>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 700 260" style="min-width:600px" role="img" aria-label="Thay cuộc họp đầu tiên o1 của lời giải tối ưu bằng cuộc g kết thúc sớm nhất, lời giải vẫn hợp lệ">
+      <g stroke="currentColor" stroke-opacity=".25" stroke-width="1">
+        <line x1="166" y1="34" x2="166" y2="228"/><line x1="234" y1="34" x2="234" y2="228"/><line x1="404" y1="34" x2="404" y2="228"/><line x1="642" y1="34" x2="642" y2="228"/>
+      </g>
+      <line x1="268" y1="30" x2="268" y2="232" stroke-width="2.5" stroke-dasharray="6 5" style="stroke:var(--green)"/>
+      <line x1="336" y1="30" x2="336" y2="232" stroke-width="2.5" stroke-dasharray="6 5" style="stroke:var(--blue)"/>
+      <g fill="currentColor" font-size="14" font-weight="700">
+        <text x="10" y="76">Lời giải tối ưu O</text><text x="10" y="146">Tham lam chọn g</text><text x="10" y="216">O′ = O, thay o₁ bằng g</text>
+      </g>
+      <g>
+        <rect x="200" y="56" width="136" height="30" rx="7" style="fill:var(--blue)"/><rect x="370" y="56" width="102" height="30" rx="7" style="fill:var(--blue)"/><rect x="506" y="56" width="102" height="30" rx="7" style="fill:var(--blue)"/>
+        <rect x="166" y="126" width="102" height="30" rx="7" style="fill:var(--green)"/>
+        <rect x="200" y="196" width="136" height="30" rx="7" fill="none" stroke-dasharray="5 4" stroke-width="2" style="stroke:var(--mute)"/>
+        <rect x="166" y="196" width="102" height="30" rx="7" style="fill:var(--green)"/><rect x="370" y="196" width="102" height="30" rx="7" style="fill:var(--blue)"/><rect x="506" y="196" width="102" height="30" rx="7" style="fill:var(--blue)"/>
+      </g>
+      <g fill="#fff" font-size="14" font-weight="700" text-anchor="middle" style="stroke:none">
+        <text x="268" y="76">o₁</text><text x="421" y="76">o₂</text><text x="557" y="76">o₃</text><text x="217" y="146">g</text><text x="217" y="216">g</text><text x="421" y="216">o₂</text><text x="557" y="216">o₃</text>
+      </g>
+      <g font-size="13" text-anchor="middle" font-weight="700">
+        <text x="268" y="22" style="fill:var(--green)">g kết thúc</text><text x="336" y="22" style="fill:var(--blue)">o₁ kết thúc</text>
+      </g>
+      <text x="420" y="252" font-size="13" text-anchor="middle" fill="currentColor">g kết thúc ≤ o₁ kết thúc ≤ o₂ bắt đầu, nên g không chạm o₂</text>
+    </svg></div>
+    <figcaption>g là cuộc kết thúc sớm nhất trong <em>tất cả</em> cuộc họp, nên g kết thúc không muộn hơn o₁. o₂ bắt đầu sau khi o₁ kết thúc, tức cũng sau khi g kết thúc. O′ hợp lệ và có cùng số cuộc với O, nên O′ cũng tối ưu và chứa g.</figcaption>
+  </figure>
+  <div class="key"><strong>Chỗ chứng minh gãy là chỗ phản ví dụ nằm</strong><p>Thử áp đúng lập luận trên cho tiêu chí “ngắn nhất”: thay o₁ bằng g ngắn nhất. Bước 4 gãy ngay: g ngắn nhưng có thể <em>kết thúc muộn hơn</em> o₁ và chạm o₂. Đọc lại bước gãy, bạn dựng được phản ví dụ của Bộ B: một cuộc ngắn vắt qua ranh giới giữa hai cuộc dài. Chứng minh và phản ví dụ là hai mặt của cùng một suy luận.</p></div>
+  <h3>Kỹ thuật thứ hai: tham lam luôn dẫn trước</h3>
+  <p>Đôi khi dễ hơn là so sánh từng bước: sau k lựa chọn, tham lam “ở vị trí không tệ hơn” bất kỳ lời giải nào sau k lựa chọn. Với lịch họp: gọi g<sub>k</sub> và o<sub>k</sub> là cuộc thứ k của tham lam và của O (đều xếp theo thời gian). Quy nạp: <code>kết_thúc(g_k) ≤ kết_thúc(o_k)</code> với mọi k. Vậy nếu O xếp được m cuộc, tham lam cũng còn chỗ cho cuộc thứ m. Kỹ thuật này hợp với các bài “tầm với”, như <a href="#tam-voi">Jump Game</a>.</p>
+</section>
+
+<!-- ============ CÀI ĐẶT ============ -->
+<section class="st" id="cai-dat">
+  <h2>Cài đặt: gần như luôn là sắp xếp rồi quét, hoặc một hàng đợi ưu tiên</h2>
+  <div class="two">
+    <div>
+      <p>Một tiêu chí đã chứng minh thường dịch thành code theo một trong hai khuôn:</p>
+      <ul class="sig">
+        <li><strong>Sắp xếp một lần + quét một lượt</strong>: khi thứ tự ưu tiên không đổi trong lúc chạy (kết thúc sớm nhất, tỉ lệ giá/kg). O(n log n).</li>
+        <li><strong>Hàng đợi ưu tiên (heap)</strong>: khi lựa chọn tạo ra phần tử mới hoặc thứ tự thay đổi theo thời gian (gộp hai que ngắn nhất, xếp phòng họp tối thiểu). O(n log n).</li>
+      </ul>
+      <p>Chỗ dễ sai nhất khi cài đặt bài khoảng là <strong>biên</strong>: chạm nhau có tính là trùng không? LeetCode 435 dùng khoảng nửa mở, nên điều kiện là <code>start ≥ lastEnd</code>. LeetCode 452 (bắn bóng) thì <code>[1,2]</code> và <code>[2,3]</code> bắn chung một mũi tên được, nên so sánh đổi thành <code>start &gt; lastEnd</code>.</p>
+    </div>
+    <div class="codewrap" style="margin-top:0"><p class="lbl">LeetCode 435 · Non-overlapping Intervals</p><pre><code>func eraseOverlapIntervals(_ intervals: [[Int]]) -&gt; Int {
+    let sorted = intervals.sorted { $0[1] &lt; $1[1] }   // kết thúc sớm nhất trước
+    var kept = 0, lastEnd = Int.min
+    for iv in sorted where iv[0] &gt;= lastEnd {          // không chồng lên cái đã giữ
+        kept += 1
+        lastEnd = iv[1]
+    }
+    return intervals.count - kept                      // số cuộc phải bỏ
+}</code></pre></div>
+  </div>
+</section>
+
+<!-- ============ KIỂM CHỨNG ============ -->
+<section class="st" id="kiem-chung">
+  <h2>Kiểm chứng: cho vét cạn làm trọng tài trên hàng nghìn input nhỏ</h2>
+  <p>Vì tham lam sai một cách im lặng, hãy luôn có một trọng tài. Vét cạn (hoặc DP) chậm nhưng chắc chắn đúng; chạy cả hai trên input ngẫu nhiên nhỏ và dừng ở chỗ khác nhau đầu tiên. Đây là cách máy tìm ra những phản ví dụ khó như Bộ C.</p>
+  <div class="codewrap"><p class="lbl">Stress test: so tham lam với vét cạn mọi tập con</p><pre><code>func bruteMax(_ iv: [[Int]]) -&gt; Int {               // trọng tài: chỉ dùng khi n nhỏ
+    var best = 0
+    for mask in 0..&lt;(1 &lt;&lt; iv.count) {
+        let pick = iv.indices.filter { mask &amp; (1 &lt;&lt; $0) != 0 }
+                             .map { iv[$0] }.sorted { $0[0] &lt; $1[0] }
+        let ok = zip(pick, pick.dropFirst()).allSatisfy { $0.0[1] &lt;= $0.1[0] }
+        if ok { best = max(best, pick.count) }
+    }
+    return best
+}
+
+for _ in 0..&lt;10_000 {
+    let iv: [[Int]] = (0..&lt;Int.random(in: 1...8)).map { _ in
+        let s = Int.random(in: 0...20)
+        return [s, s + Int.random(in: 1...6)]
+    }
+    let greedy = iv.count - eraseOverlapIntervals(iv)
+    if greedy != bruteMax(iv) { print("Phản ví dụ:", iv); break }
+}</code></pre></div>
+  <div class="key"><strong>Khi đi phỏng vấn</strong><p>Không cần viết chứng minh đầy đủ, nhưng hãy nói được ba điều: tiêu chí là gì; một phản ví dụ cho tiêu chí “trông hợp lý” nhưng sai; và một câu lập luận hoán đổi (“nếu lời giải tối ưu không bắt đầu bằng g, đổi cuộc đầu của nó thành g vẫn hợp lệ vì g kết thúc sớm hơn”). Ba câu này phân biệt người hiểu tham lam với người đoán trúng.</p></div>
+</section>
+
+<!-- ============ THAM LAM HAY DP ============ -->
+<section class="st ink x" id="tham-lam-hay-dp">
+  <p class="line-name">Tuyến đổi sang Quy hoạch động</p>
+  <h2>Tham lam hay DP: một thay đổi nhỏ trong đề có thể phá vỡ tham lam</h2>
+  <p>Cách nhanh nhất để có trực giác phân biệt là học theo <strong>cặp bài sinh đôi</strong>: hai bài gần như giống nhau, một bài tham lam đúng, bài kia phải dùng DP. Đọc cột cuối: lý do gãy luôn là lập luận hoán đổi không còn làm được.</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Tham lam đúng</th><th>Thay đổi nhỏ</th><th>Phải dùng DP</th><th>Vì sao hoán đổi gãy</th></tr></thead>
+    <tbody>
+      <tr><td>Xếp nhiều cuộc họp nhất (435)</td><td>mỗi cuộc họp có tiền thưởng</td><td>Weighted Job Scheduling (1235)</td><td>Một cuộc dài thưởng lớn có thể đáng hơn ba cuộc ngắn; đổi o₁ thành g có thể làm giảm tổng thưởng</td></tr>
+      <tr><td>Cái túi phân số</td><td>không được cắt món</td><td>0/1 Knapsack</td><td>Không đổi được “từng kg” giữa hai món; phần trống thừa không lấp được</td></tr>
+      <tr><td>Đổi tiền hệ chuẩn {1, 5, 10, 25}</td><td>hệ đồng tuỳ ý {1, 3, 4}</td><td>Coin Change (322)</td><td>Đồng lớn nhất có thể để lại một phần dư xấu</td></tr>
+      <tr><td>Mua bán cổ phiếu không giới hạn (122)</td><td>bán xong phải nghỉ một ngày</td><td>309</td><td>Chốt lời hôm nay lấy mất quyền mua ngày mai</td></tr>
+      <tr><td>Gộp hai que ngắn nhất (Huffman)</td><td>chỉ được gộp hai đống kề nhau</td><td>Merge Stones (1000), DP khoảng</td><td>Hai phần tử nhỏ nhất có thể không kề nhau</td></tr>
+      <tr><td>Jump Game: tới được không (55)</td><td>đếm số cách tới đích</td><td>DP đếm</td><td>Tham lam đi theo một đường; nó không đếm được</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Máy săn phản ví dụ cho bài đổi tiền</h3>
+  <p>Chọn một hệ đồng hoặc tự nhập. Mỗi ô là một tổng tiền; máy so tham lam (luôn lấy đồng lớn nhất) với DP. Bấm vào một ô để xem hai cách đổi.</p>
+  <div class="panel" id="hunt">
+    <div class="tog" role="group" aria-label="Hệ đồng có sẵn" id="hunt-pre">
+      <span class="tl">Hệ đồng</span>
+      <button type="button" data-s="1,3,4">{1, 3, 4}</button><button type="button" data-s="1,5,10,25">{1, 5, 10, 25}</button><button type="button" data-s="1,5,11">{1, 5, 11}</button><button type="button" data-s="1,2,5,10,20,50">{1, 2, 5, 10, 20, 50}</button><button type="button" data-s="1,7,10">{1, 7, 10}</button><button type="button" data-s="2,3">{2, 3}</button>
+    </div>
+    <form class="inrow" id="hunt-form"><label for="hunt-in" class="cap">Tự nhập:</label><input id="hunt-in" inputmode="numeric" autocomplete="off" placeholder="ví dụ 1, 4, 6, 9"><button type="submit" class="btn">Kiểm tra</button><span class="err" id="hunt-err"></span></form>
+    <div class="coins-grid" id="hunt-grid"></div>
+    <p class="say" id="hunt-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw ok"></i>tham lam tối ưu</span><span><i class="sw bad"></i>tham lam dùng nhiều đồng hơn</span><span><i class="sw fail"></i>tham lam bế tắc dù có cách đổi</span></div>
+  </div>
+  <p>Với hệ có đồng 1, có một kết quả đẹp (Kozen và Zaks, 1994): nếu tham lam sai ở đâu đó, nó đã sai ở một tổng <strong>nhỏ hơn tổng của hai mệnh giá lớn nhất</strong>. Vì vậy máy chỉ cần kiểm tra tới đó là đủ kết luận cho mọi tổng. Hệ tiền Việt Nam kiểu 1–2–5 là hệ “chuẩn”: tham lam luôn đúng, nên người thu ngân trả tiền thừa theo kiểu tham lam mà không cần nghĩ.</p>
+
+  <h3>Cái túi: cắt được thì tham lam, không cắt được thì DP</h3>
+  <p>Túi chịu 50 kg. Món A: 10 kg, giá 60 (6/kg). Món B: 20 kg, giá 100 (5/kg). Món C: 30 kg, giá 120 (4/kg). Tham lam: ưu tiên giá mỗi kg cao nhất.</p>
+  <div class="kb" aria-label="So sánh cái túi phân số và cái túi 0/1">
+    <div class="row"><span class="nm">Phân số, tham lam theo giá/kg</span><div class="bar"><span class="seg sA" style="width:20%">A</span><span class="seg sB" style="width:40%">B</span><span class="seg sC" style="width:40%">⅔ C</span></div><span class="val">240</span></div>
+    <div class="row"><span class="nm">0/1, tham lam theo giá/kg</span><div class="bar"><span class="seg sA" style="width:20%">A</span><span class="seg sB" style="width:40%">B</span><span class="seg sE" style="width:40%">trống 20 kg</span></div><span class="val" style="color:var(--red)">160</span></div>
+    <div class="row"><span class="nm">0/1, tối ưu bằng DP</span><div class="bar"><span class="seg sB" style="width:40%">B</span><span class="seg sC" style="width:60%">C</span></div><span class="val" style="color:var(--green)">220</span></div>
+  </div>
+  <p>Ở bài phân số, lập luận hoán đổi chạy trơn: nếu lời giải nào đó chứa một kg của món rẻ hơn trong khi món đắt hơn còn thừa, đổi kg đó lấy kg đắt hơn sẽ có lợi. Ở bài 0/1, không có “một kg” để đổi; món là khối nguyên, và khoảng trống 20 kg không lấp được bằng gì. Đây là mẫu chung: <strong>tham lam thích những thứ chia nhỏ được và đồng đều; DP xử lý những thứ nguyên khối và có trọng số khác nhau</strong>.</p>
+
+  <h3>Quy trình quyết định</h3>
+  <ol class="route" style="--c:var(--ink)">
+    <li><strong>Đề hỏi đếm số cách, xác suất, hay liệt kê?</strong>Tham lam chỉ đi theo một đường, nó không đếm được.<div class="pb"><span class="dp">Có → DP (hoặc quay lui nếu liệt kê)</span><span>Không → tiếp</span></div></li>
+    <li><strong>Nhìn ràng buộc của đề</strong>n ≤ 5000 hoặc có một đại lượng nhỏ (sức chứa, tổng ≤ 10⁴): DP chạy được. n tới 10⁵–10⁶ và không có đại lượng nhỏ nào: DP O(n²) quá chậm, khả năng cao là sắp xếp + tham lam.<div class="pb"><span>Ràng buộc là gợi ý, không phải bằng chứng</span></div></li>
+    <li><strong>Liệt kê 3–4 tiêu chí, săn phản ví dụ với 2–4 phần tử</strong><div class="pb"><span class="dp">Tiêu chí nào cũng có phản ví dụ → DP</span><span>Còn tiêu chí sống sót → tiếp</span></div></li>
+    <li><strong>Thử lập luận hoán đổi hoặc luôn dẫn trước</strong><div class="pb"><span class="gr">Chứng minh được → tham lam</span><span>Gãy ở bước 4 → đọc chỗ gãy để dựng phản ví dụ, quay lại bước 3</span></div></li>
+    <li><strong>Chưa chứng minh được nhưng stress test qua hàng nghìn input</strong><div class="pb"><span class="gr">Tham lam, có rủi ro</span><span class="dp">Nếu ràng buộc cho phép, DP là lựa chọn an toàn</span></div></li>
+  </ol>
+</section>
+
+<!-- ============ TUYẾN XANH: HOÁN ĐỔI KỀ ============ -->
+<section class="st blue x" id="hoan-doi-ke">
+  <p class="line-name">Tuyến mẫu tham lam · rẽ từ ga Tiêu chí</p>
+  <h2>Hoán đổi kề: tìm thứ tự sắp xếp bằng cách so hai phần tử đứng cạnh nhau</h2>
+  <p>Khi đáp án là <strong>một thứ tự</strong> của mọi phần tử, đừng đoán khoá sắp xếp. Xét một thứ tự bất kỳ, rồi hỏi: nếu đổi chỗ hai phần tử <strong>kề nhau</strong> a, b thì sao? Phần trước và phần sau không đổi, nên chỉ cần so <code>…ab…</code> với <code>…ba…</code>. Điều kiện “a nên đứng trước b” chính là comparator.</p>
+  <div class="key"><strong>Largest Number (LeetCode 179)</strong><p>Xếp <code>[3, 30, 34, 5, 9]</code> thành số lớn nhất khi nối chuỗi. Đáp án: <code>9534330</code>.</p></div>
+  <div class="swap" aria-label="So sánh hai thứ tự của 3 và 30">
+    <div class="r"><span class="ch dim">phần trước giữ nguyên</span><span class="ch a">3</span><span class="ch b">30</span><span class="ch dim">phần sau giữ nguyên</span><span class="res">→ “330”</span></div>
+    <div class="r"><span class="ch dim">phần trước giữ nguyên</span><span class="ch b">30</span><span class="ch a">3</span><span class="ch dim">phần sau giữ nguyên</span><span class="res" style="color:var(--mute)">→ “303”</span></div>
+  </div>
+  <p>Vì <code>"3"+"30" &gt; "30"+"3"</code>, 3 phải đứng trước 30. Comparator: <strong>a trước b khi a+b &gt; b+a</strong>. Để ý tiêu chí trực giác “số lớn trước” cho 30 đứng trước 3, sai; “chuỗi lớn trước theo từ điển” cũng cho “30” &gt; “3”, sai. Hoán đổi kề cho ra comparator đúng mà không cần đoán.</p>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func largestNumber(_ nums: [Int]) -&gt; String {
+    let s = nums.map(String.init)
+                .sorted { $0 + $1 &gt; $1 + $0 }   // a trước b nếu ab &gt; ba
+    return s.first == "0" ? "0" : s.joined()    // [0, 0] → "0"
+}</code></pre></div>
+    <p>Cùng mẫu này: <strong>Two City Scheduling</strong> (1029) sắp theo hiệu chi phí <code>costA − costB</code>; xếp việc để tổng thời gian chờ nhỏ nhất thì làm việc ngắn trước. Lưu ý Swift: comparator phải là “nhỏ hơn chặt” (strict weak ordering). Dùng <code>&gt;=</code> có thể làm <code>sorted</code> cho kết quả sai.</p>
+  </div>
+</section>
+
+<!-- ============ HEAP ============ -->
+<section class="st blue" id="heap">
+  <h2>Hàng đợi ưu tiên: luôn lấy cái nhỏ nhất đang có, kể cả cái vừa được tạo ra</h2>
+  <div class="key"><strong>Minimum Cost to Connect Sticks (LeetCode 1167, cũng là mã Huffman)</strong><p>Các que dài <code>[1, 8, 3, 5]</code>. Nối hai que tốn chi phí bằng tổng độ dài của chúng, que mới quay lại đống. Nối tất cả thành một que với chi phí nhỏ nhất.</p></div>
+  <div class="two">
+    <figure style="margin-top:0">
+      <div class="svgbox"><svg viewBox="0 0 560 240" style="min-width:420px" role="img" aria-label="Cây gộp: 1 và 3 thành 4, 4 và 5 thành 9, 9 và 8 thành 17, tổng chi phí 30">
+        <g stroke="currentColor" stroke-width="2" stroke-opacity=".5"><line x1="110" y1="150" x2="60" y2="205"/><line x1="110" y1="150" x2="160" y2="205"/><line x1="200" y1="90" x2="110" y2="150"/><line x1="200" y1="90" x2="290" y2="205"/><line x1="320" y1="32" x2="200" y2="90"/><line x1="320" y1="32" x2="440" y2="205"/></g>
+        <g stroke-width="4" fill="none" style="stroke:var(--blue)"><circle cx="60" cy="205" r="20"/><circle cx="160" cy="205" r="20"/><circle cx="290" cy="205" r="20"/><circle cx="440" cy="205" r="20"/></g>
+        <g style="fill:var(--green)"><circle cx="110" cy="150" r="22"/><circle cx="200" cy="90" r="22"/><circle cx="320" cy="32" r="22"/></g>
+        <g text-anchor="middle" font-weight="800" font-size="16"><text x="60" y="211" fill="currentColor">1</text><text x="160" y="211" fill="currentColor">3</text><text x="290" y="211" fill="currentColor">5</text><text x="440" y="211" fill="currentColor">8</text><text x="110" y="156" fill="#fff" style="stroke:none">4</text><text x="200" y="96" fill="#fff" style="stroke:none">9</text><text x="320" y="38" fill="#fff" style="stroke:none">17</text></g>
+        <g font-size="13" fill="currentColor"><text x="140" y="152">chi phí 4</text><text x="230" y="92">chi phí 9</text><text x="350" y="36">chi phí 17</text><text x="400" y="110" font-weight="700" font-size="15">Tổng = 4 + 9 + 17 = 30</text></g>
+      </svg></div>
+      <figcaption>Mỗi que bị cộng vào chi phí đúng bằng số tầng phía trên nó. Que ngắn nhất nên nằm sâu nhất. Nối hai que dài nhất trước thì tốn 13 + 16 + 17 = 46.</figcaption>
+    </figure>
+    <div>
+      <p>Lập luận hoán đổi ở đây: trong cây gộp tối ưu bất kỳ, nếu hai que ngắn nhất không nằm ở tầng sâu nhất, đổi chúng với hai que ở tầng sâu nhất sẽ không làm chi phí tăng. Vậy gộp hai que ngắn nhất trước là an toàn. Que mới tạo ra lại quay vào đống, nên cần heap thay vì sắp xếp một lần.</p>
+      <div class="codewrap"><pre><code>import Collections                           // swift-collections: Heap
+
+func connectSticks(_ sticks: [Int]) -&gt; Int {
+    var heap = Heap(sticks), cost = 0
+    while heap.count &gt; 1 {
+        let a = heap.popMin()!, b = heap.popMin()!  // hai que ngắn nhất
+        cost += a + b
+        heap.insert(a + b)                         // que mới quay lại đống
+    }
+    return cost
+}</code></pre></div>
+    </div>
+  </div>
+  <p><strong>Tham lam có hối tiếc</strong>: một biến thể mạnh của mẫu này. Ở Furthest Building You Can Reach (1642), cứ tạm dùng thang cho mọi lần leo và cất độ cao vào heap; khi hết thang, “rút lại” thang ở lần leo thấp nhất và trả bằng gạch. Heap cho phép sửa một quyết định cũ với chi phí rẻ, điều tham lam thuần tuý không làm được.</p>
+</section>
+
+<!-- ============ TẦM VỚI ============ -->
+<section class="st blue" id="tam-voi">
+  <h2>Tầm với xa nhất: không chọn bước nhảy, chỉ theo dõi xa nhất có thể tới đâu</h2>
+  <div class="key"><strong>Jump Game II (LeetCode 45)</strong><p>Đứng ở ô 0, ô i cho phép nhảy tối đa a[i] ô. Cần ít bước nhảy nhất để tới ô cuối. Ở đây a = <code>[2, 3, 1, 1, 2, 4, 2, 0, 1, 1]</code>.</p></div>
+  <p>Tham lam ngây thơ “mỗi lần nhảy xa nhất có thể” có thể sai. Cách đúng là nhìn theo <strong>lớp</strong>: lớp k gồm các ô tới được bằng đúng k bước. Lớp k+1 là mọi ô tới được từ lớp k mà chưa thuộc lớp nào. Đây thực chất là BFS, nhưng các lớp là những đoạn liên tiếp nên chỉ cần hai biến: cuối lớp hiện tại và tầm xa nhất.</p>
+  <div class="panel">
+    <div class="scroll"><div class="jumprow" id="jump"></div></div>
+    <p class="stat" id="jump-stat"></p>
+  </div>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func jump(_ a: [Int]) -&gt; Int {
+    var jumps = 0, end = 0, farthest = 0
+    for i in 0..&lt;(a.count - 1) {
+        farthest = max(farthest, i + a[i])  // tầm xa nhất từ lớp hiện tại
+        if i == end {                        // đi hết lớp → bắt buộc nhảy
+            jumps += 1
+            end = farthest                   // lớp mới kết thúc ở đây
+        }
+    }
+    return jumps
+}</code></pre></div>
+    <p>Chứng minh bằng <strong>luôn dẫn trước</strong>: sau k bước, tầm xa nhất mà thuật toán ghi nhận không nhỏ hơn vị trí của bất kỳ cách nhảy k bước nào. Cùng mẫu này: Jump Game (55) chỉ cần kiểm tra <code>farthest ≥ i</code> ở mỗi ô; Gas Station (134) và Partition Labels (763) cũng theo dõi một “tầm” chạy dần.</p>
+  </div>
+</section>
+
+<!-- ============ GHÉP CẶP ============ -->
+<section class="st blue" id="ghep-cap">
+  <h2>Ghép cặp: sắp cả hai phía, ghép cái nhỏ nhất đủ dùng</h2>
+  <div class="two">
+    <div>
+      <div class="key" style="margin-top:0"><strong>Assign Cookies (LeetCode 455)</strong><p>Mỗi đứa trẻ cần bánh có cỡ ít nhất g[i]; mỗi cái bánh cỡ s[j]. Làm nhiều trẻ hài lòng nhất.</p></div>
+      <p>Tiêu chí: cho đứa dễ tính nhất <strong>cái bánh nhỏ nhất đủ cho nó</strong>. Hoán đổi: nếu lời giải tối ưu đưa cho nó một cái bánh to hơn, đổi lấy cái nhỏ nhất đủ dùng thì cái bánh to được giải phóng cho đứa khác, không ai thiệt. Sau khi sắp xếp, chỉ cần hai con trỏ.</p>
+      <p>Cùng mẫu: Boats to Save People (881) ghép người nặng nhất với người nhẹ nhất nếu vừa thuyền; Advantage Shuffle (870) dùng lá bài nhỏ nhất vẫn thắng.</p>
+    </div>
+    <div class="codewrap" style="margin-top:0"><pre><code>func findContentChildren(_ g: [Int], _ s: [Int]) -&gt; Int {
+    let g = g.sorted(), s = s.sorted()
+    var i = 0                                // đứa trẻ đang chờ
+    for cookie in s where i &lt; g.count &amp;&amp; cookie &gt;= g[i] {
+        i += 1                               // bánh nhỏ nhất đủ cho đứa dễ tính nhất
+    }
+    return i
+}</code></pre></div>
+  </div>
+</section>
+
+<!-- ============ CỘNG DỒN ============ -->
+<section class="st blue" id="loi-nhuan">
+  <h2>Cộng dồn: khi tổng tách được thành từng phần nhỏ độc lập, lấy mọi phần có lợi</h2>
+  <div class="two">
+    <figure style="margin-top:0">
+      <div class="svgbox"><svg viewBox="0 0 560 210" style="min-width:420px" role="img" aria-label="Giá cổ phiếu 7, 1, 5, 3, 6, 4; hai đoạn tăng +4 và +3 được tô xanh">
+        <g stroke="currentColor" stroke-opacity=".35" stroke-width="3" fill="none"><polyline points="40,22 136,166"/><polyline points="232,70 328,118"/><polyline points="424,46 520,94"/></g>
+        <g stroke-width="6" stroke-linecap="round" style="stroke:var(--green)"><line x1="136" y1="166" x2="232" y2="70"/><line x1="328" y1="118" x2="424" y2="46"/></g>
+        <g fill="currentColor"><circle cx="40" cy="22" r="6"/><circle cx="136" cy="166" r="6"/><circle cx="232" cy="70" r="6"/><circle cx="328" cy="118" r="6"/><circle cx="424" cy="46" r="6"/><circle cx="520" cy="94" r="6"/></g>
+        <g font-size="14" fill="currentColor" text-anchor="middle"><text x="58" y="20" text-anchor="start">7</text><text x="136" y="194">1</text><text x="232" y="56">5</text><text x="328" y="146">3</text><text x="424" y="32">6</text><text x="520" y="122">4</text></g>
+        <g font-size="16" font-weight="800" style="fill:var(--green)"><text x="168" y="108" text-anchor="end">+4</text><text x="362" y="74" text-anchor="end">+3</text></g>
+      </svg></div>
+      <figcaption>Giá [7, 1, 5, 3, 6, 4]. Lãi tối đa là 7, đúng bằng tổng các đoạn tăng.</figcaption>
+    </figure>
+    <div>
+      <p><strong>Best Time to Buy and Sell Stock II (122)</strong>: mua bán không giới hạn số lần. Mọi giao dịch “mua ngày i, bán ngày j” có lãi bằng tổng các chênh lệch từng ngày từ i đến j. Vậy tổng lãi là tổng của các chênh lệch ngày được chọn, và mỗi chênh lệch độc lập với nhau: lấy mọi chênh lệch dương.</p>
+      <div class="codewrap"><pre><code>func maxProfit(_ p: [Int]) -&gt; Int {
+    guard p.count &gt; 1 else { return 0 }
+    var profit = 0
+    for i in 1..&lt;p.count where p[i] &gt; p[i-1] {
+        profit += p[i] - p[i-1]              // lấy mọi ngày tăng
+    }
+    return profit
+}</code></pre></div>
+      <p>Thêm “bán xong nghỉ một ngày” (309) là các chênh lệch không còn độc lập: lấy chênh lệch hôm nay có thể cấm chênh lệch ngày mai. Tham lam gãy, cần máy trạng thái của DP.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BẢNG TRA ============ -->
+<section class="st blue" id="bang-tra">
+  <h2>Bảng tra: mẫu tham lam, tiêu chí điển hình và cách chứng minh đi kèm</h2>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Mẫu</th><th>Tiêu chí điển hình</th><th>Chứng minh thường dùng</th><th>Bài luyện (LeetCode)</th></tr></thead>
+    <tbody>
+      <tr><td>Khoảng thời gian</td><td>sắp theo điểm kết thúc</td><td>hoán đổi phần tử đầu tiên</td><td>435, 452, 646</td></tr>
+      <tr><td>Hoán đổi kề</td><td>so <code>ab</code> với <code>ba</code></td><td>hoán đổi hai phần tử kề nhau</td><td>179, 1029, 406</td></tr>
+      <tr><td>Hàng đợi ưu tiên</td><td>lấy nhỏ/lớn nhất hiện có</td><td>hoán đổi trong cây gộp; tham lam có hối tiếc</td><td>1167, 621, 1642, 502</td></tr>
+      <tr><td>Tầm với</td><td>mở rộng tầm xa nhất</td><td>luôn dẫn trước</td><td>55, 45, 134, 763</td></tr>
+      <tr><td>Ghép cặp</td><td>nhỏ nhất đủ dùng; nặng nhất với nhẹ nhất</td><td>hoán đổi cặp</td><td>455, 881, 870</td></tr>
+      <tr><td>Cộng dồn</td><td>lấy mọi phần có lợi</td><td>tách tổng thành phần độc lập</td><td>122, 53, 135 (hai lượt)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ KHI BỊ KẸT ============ -->
+<section class="st green x" id="bi-ket">
+  <p class="line-name">Tuyến luyện tập</p>
+  <h2>Khi bị kẹt: bảy lỗi khiến lời giải tham lam sai</h2>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Lỗi</th><th>Biểu hiện</th><th>Cách sửa</th></tr></thead>
+    <tbody>
+      <tr><td>Tin tiêu chí đầu tiên</td><td>Qua ví dụ của đề, sai test ẩn</td><td>Luôn viết ra ít nhất ba tiêu chí và săn phản ví dụ cho từng cái</td></tr>
+      <tr><td>Sắp sai khoá</td><td>Sắp theo bắt đầu thay vì kết thúc</td><td>Hỏi: lựa chọn nào để lại nhiều chỗ nhất cho tương lai?</td></tr>
+      <tr><td>Sai biên</td><td>Lệch một ở các khoảng chạm nhau</td><td>Đọc kỹ chạm nhau có tính là trùng không; chọn <code>&lt;</code> hay <code>≤</code> có chủ đích</td></tr>
+      <tr><td>Phá hoà tuỳ tiện</td><td>Đúng hay sai tuỳ thứ tự input</td><td>Thử phản ví dụ có hoà; nếu kết quả phụ thuộc cách phá hoà, thêm khoá phụ</td></tr>
+      <tr><td>Dùng tham lam cho bài có trọng số</td><td>Bài khoảng có tiền thưởng, cái túi 0/1</td><td>Trọng số khác nhau + món nguyên khối là tín hiệu DP</td></tr>
+      <tr><td>Dùng tham lam cho bài đếm</td><td>Ra một con số, không phải tổng số cách</td><td>Đếm luôn là DP</td></tr>
+      <tr><td>Comparator không chặt</td><td>Swift <code>sorted</code> cho thứ tự lạ</td><td>Comparator phải là “nhỏ hơn chặt”: dùng <code>&gt;</code>, không dùng <code>&gt;=</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="st green" id="lo-trinh">
+  <h2>Lộ trình luyện: giải theo cặp, luôn tự hỏi vì sao tham lam đúng</h2>
+  <ol class="route">
+    <li><strong>Chặng 1 · Khoảng và sắp xếp</strong>Mục tiêu: tự viết được lập luận hoán đổi cho tiêu chí kết thúc sớm nhất.<div class="pb"><span>455 Assign Cookies</span><span>435 Non-overlapping Intervals</span><span>452 Minimum Arrows</span><span>646 Pair Chain</span><span>763 Partition Labels</span></div></li>
+    <li><strong>Chặng 2 · Tầm với và cộng dồn</strong>Mục tiêu: dùng được kỹ thuật luôn dẫn trước.<div class="pb"><span>55 Jump Game</span><span>45 Jump Game II</span><span>134 Gas Station</span><span>122 Stock II</span><span>135 Candy</span></div></li>
+    <li><strong>Chặng 3 · Hoán đổi kề và heap</strong>Mục tiêu: suy ra comparator thay vì đoán.<div class="pb"><span>179 Largest Number</span><span>1029 Two City Scheduling</span><span>406 Queue Reconstruction</span><span>621 Task Scheduler</span><span>1642 Furthest Building</span></div></li>
+    <li><strong>Chặng 4 · Cặp sinh đôi với DP</strong>Giải cả hai bài trong cặp; viết một câu giải thích vì sao tham lam gãy ở bài thứ hai.<div class="pb"><span>122 vs 309</span><span>435 vs 1235</span><span>322 với {1,5,10,25} vs {1,3,4}</span><span>55 vs đếm số cách tới đích</span></div></li>
+  </ol>
+  <p>Với mỗi bài: viết mẫu suy luận bên dưới trên giấy, kèm ít nhất một phản ví dụ cho một tiêu chí sai, rồi mới code. Khi đã code xong, chạy stress test với vét cạn. Nếu phải đọc lời giải mẫu, chỉ đọc <strong>tiêu chí</strong>, rồi tự chứng minh nó.</p>
+</section>
+
+<section class="st green last" id="mau">
+  <h2>Mẫu suy luận: điền bảy dòng này trước khi viết code</h2>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Mẫu trống</p><pre class="plain"><code>Bài: ...
+1. Lựa chọn    : mỗi bước tôi chọn ...; chọn xong còn lại bài ...
+2. Tiêu chí    : a) ...   b) ...   c) ...
+3. Phản ví dụ  : a) sai với ...   b) sai với ...
+4. Sống sót    : ...
+   Hoán đổi    : trong lời giải tối ưu O, thay ... bằng g
+                 vẫn hợp lệ vì ..., không tệ hơn vì ...
+5. Cài đặt     : sắp theo ... / heap theo ...; O(...)
+6. Kiểm chứng  : so với vét cạn, n ≤ 8, ... input ngẫu nhiên
+7. Nếu gãy     : chuyển DP, trạng thái f(...) = ...</code></pre></div>
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Đã điền cho bài xếp lịch phòng họp</p><pre class="plain"><code>Bài: Non-overlapping Intervals (435)
+1. Lựa chọn    : cuộc họp đầu tiên được giữ; còn lại các cuộc
+                 bắt đầu sau khi nó kết thúc
+2. Tiêu chí    : a) bắt đầu sớm  b) ngắn nhất
+                 c) ít xung đột  d) kết thúc sớm
+3. Phản ví dụ  : a) [0,10) chặn 3 cuộc ngắn
+                 b) [4,7) vắt giữa [0,5) và [6,11)
+                 c) Bộ C, 11 cuộc
+4. Sống sót    : d) kết thúc sớm nhất
+   Hoán đổi    : thay o₁ bằng g; g kết thúc ≤ o₁ kết thúc
+                 ≤ o₂ bắt đầu, nên hợp lệ, cùng số cuộc
+5. Cài đặt     : sắp theo kết thúc, quét một lượt; O(n log n)
+6. Kiểm chứng  : 10 000 bộ ngẫu nhiên, khớp vét cạn
+7. Nếu gãy     : (có thưởng → 1235) DP f(i) trên cuộc đã sắp</code></pre></div>
+  </div>
+  <p>Khi điền không được dòng 3 cho bất kỳ tiêu chí nào khác, có thể bạn chưa nghĩ đủ ứng viên. Khi dòng 4 không chứng minh được, đọc lại chỗ gãy: nó thường chỉ ra phản ví dụ, hoặc chỉ đường sang DP ở dòng 7.</p>
+</section>
+
+</main>
+<footer><div class="wrap">Tài liệu học thuật toán tham lam · đi cùng “Tư duy Quy hoạch động” · ví dụ code bằng Swift · bài tập đánh số theo LeetCode.</div></footer>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+
+/* stacked tables: label each cell with its column head */
+for(const tb of document.querySelectorAll('table.stack')){const hs=[...tb.querySelectorAll('thead th')].map(h=>h.textContent.trim());for(const tr of tb.querySelectorAll('tbody tr'))[...tr.children].forEach((td,i)=>{td.dataset.l=hs[i]||''})}
+
+/* code: copy + light highlight */
+const KW=/\b(func|let|var|for|in|if|else|return|guard|where|while|import)\b/g;
+for(const pre of document.querySelectorAll('.codewrap pre')){
+  const code=pre.querySelector('code');
+  if(!pre.classList.contains('plain')){code.innerHTML=code.innerHTML.split('\n').map(line=>{const k=line.indexOf('//');const a=k<0?line:line.slice(0,k);const b=k<0?'':line.slice(k);return a.replace(KW,'<span class="kw">$1</span>')+(b?'<span class="cm">'+b+'</span>':'')}).join('\n')}
+  const btn=document.createElement('button');btn.className='copy';btn.type='button';btn.textContent='Sao chép';
+  btn.addEventListener('click',()=>{const t=code.textContent;try{navigator.clipboard.writeText(t).then(()=>{btn.textContent='Đã chép';setTimeout(()=>{btn.textContent='Sao chép'},1400)},()=>{btn.textContent='Không chép được'})}catch(e){btn.textContent='Không chép được'}});
+  pre.parentElement.appendChild(btn);
+}
+
+/* ---------- metro map ---------- */
+const ST=[['mo-hinh','Mô hình hoá','chuỗi lựa chọn'],['tieu-chi','Tiêu chí','chọn theo gì?'],['phan-vi-du','Phản ví dụ','tiêu chí nào sai?'],['chung-minh','Chứng minh','lập luận hoán đổi'],['cai-dat','Cài đặt','sắp xếp hoặc heap'],['kiem-chung','Kiểm chứng','so với vét cạn']];
+const PT=[['hoan-doi-ke','Hoán đổi kề','Largest Number'],['heap','Hàng đợi ưu tiên','Huffman'],['tam-voi','Tầm với','Jump Game'],['ghep-cap','Ghép cặp','Assign Cookies'],['loi-nhuan','Cộng dồn','Stock II']];
+const map=$('map');const wideMQ=window.matchMedia('(min-width:1040px)');
+function stn(x,y,col,id,name,hint,anchor,lx,ly,big){
+  const r=big?14:10;const sc=big?'var(--ink)':col;
+  return `<g class="stn" data-to="${id}" tabindex="0" role="link" aria-label="${name}"><circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--bg);stroke:${sc}" stroke-width="5"/><text x="${lx}" y="${ly}" text-anchor="${anchor}" font-weight="800" font-size="15" fill="currentColor">${name}</text><text x="${lx}" y="${ly+19}" text-anchor="${anchor}" font-size="13" fill="currentColor" opacity=".72">${hint}</text></g>`;
+}
+function drawMap(){
+  const W=map.clientWidth,H=map.clientHeight;if(!W)return;let o='';
+  if(wideMQ.matches&&W>=900){
+    const m=70,s=(W-2*m)/5,yT=48,yR=170,yB=H-110,e=30;
+    const xs=ST.map((_,i)=>m+i*s),x1=xs[1],x2=xs[2];
+    const b0=x1+e,span=W-m-b0,bxs=PT.map((_,k)=>b0+span*(k+.6)/5);
+    o+=`<path d="M${x2} ${yR} L${x2} ${yT+e} L${x2+e} ${yT} L${W-m} ${yT}" fill="none" style="stroke:var(--ink)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${x1} ${yR} L${x1} ${yB-e} L${x1+e} ${yB} L${W-m+24} ${yB}" fill="none" style="stroke:var(--blue)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${m-24} ${yR} L${W-m+24} ${yR}" fill="none" style="stroke:var(--red)" stroke-width="12" stroke-linecap="round"/>`;
+    o+=`<text x="${m-20}" y="${yR+40}" font-size="13" font-weight="700" style="fill:var(--red)">Tuyến tư duy</text>`;
+    o+=`<text x="${x1-14}" y="${(yR+yB)/2+5}" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--blue)">Tuyến mẫu</text>`;
+    o+=`<g class="stn" data-to="tham-lam-hay-dp" tabindex="0" role="link" aria-label="Sang Quy hoạch động"><circle cx="${W-m}" cy="${yT}" r="12" style="fill:var(--bg);stroke:var(--ink)" stroke-width="5"/><text x="${W-m-20}" y="${yT-14}" text-anchor="end" font-weight="800" font-size="15" fill="currentColor">Sang Quy hoạch động</text><text x="${W-m-20}" y="${yT+30}" text-anchor="end" font-size="13" fill="currentColor" opacity=".72">khi mọi tiêu chí đều có phản ví dụ</text></g>`;
+    ST.forEach((t,i)=>{const below=i===2;o+=stn(xs[i],yR,'var(--red)',t[0],t[1],t[2],'middle',xs[i],below?yR+36:yR-44,i===1||i===2)});
+    PT.forEach((t,k)=>{o+=stn(bxs[k],yB,'var(--blue)',t[0],t[1],t[2],'middle',bxs[k],yB+38,false)});
+  }else{
+    const X0=26,top=24,sy=(H-2*top)/10,L=X0+34;
+    const ys=[...Array(11)].map((_,i)=>top+i*sy);const y5=ys[5],y6=ys[6];
+    o+=`<path d="M${X0} ${ys[1]} L${X0+16} ${ys[1]+16} L${X0+16} ${(y5+y6)/2-8} L${X0} ${(y5+y6)/2+8} L${X0} ${ys[10]+10}" fill="none" style="stroke:var(--blue)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${X0} ${top-10} L${X0} ${y5}" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linecap="round"/>`;
+    ST.forEach((t,i)=>{o+=stn(X0,ys[i],'var(--red)',t[0],t[1],i===2?'sai hết → sang DP':t[2],'start',L,ys[i]-2,i===1||i===2)});
+    PT.forEach((t,k)=>{o+=stn(X0,ys[6+k],'var(--blue)',t[0],t[1],t[2],'start',L,ys[6+k]-2,false)});
+  }
+  map.innerHTML=o;
+}
+map.addEventListener('click',e=>{const g=e.target.closest('.stn');if(g)$(g.dataset.to)?.scrollIntoView()});
+map.addEventListener('keydown',e=>{const g=e.target.closest('.stn');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$(g.dataset.to)?.scrollIntoView()}});
+const roMap=new ResizeObserver(drawMap);roMap.observe(map);
+
+/* ---------- coin helpers ---------- */
+function dpCoins(coins,n){const cs=[...coins].sort((a,b)=>b-a);const dp=[0],pick=[0];for(let x=1;x<=n;x++){let best=Infinity,pc=0;for(const c of cs)if(c<=x&&dp[x-c]+1<best){best=dp[x-c]+1;pc=c}dp[x]=best;pick[x]=pc}return{dp,pick}}
+function dpPath(pick,dp,x){if(dp[x]===Infinity)return null;const out=[];while(x>0){out.push(pick[x]);x-=pick[x]}return out}
+function greedyPath(coins,x){const cs=[...coins].sort((a,b)=>b-a);const out=[];while(x>0){const c=cs.find(c=>c<=x);if(c===undefined)return null;out.push(c);x-=c}return out}
+
+/* ---------- DAG: greedy vs DP ---------- */
+const DAGS={a:{coins:[1,3,4],amt:6},b:{coins:[1,2,5],amt:9}};let dagKey='a';const dag=$('dag');
+function drawDag(){
+  const W=dag.clientWidth,H=dag.clientHeight;if(!W)return;
+  const{coins,amt}=DAGS[dagKey];const pad=26,cy=H/2,sx=(W-2*pad-20)/amt,r=Math.min(17,sx*.34);const X=v=>pad+10+(amt-v)*sx;
+  const big=coins.filter(c=>c>1).sort((a,b)=>a-b);const side=c=>big.indexOf(c)%2===0?-1:1;
+  const geo=(v,c)=>{const x1=X(v),x2=X(v-c);if(c===1)return{d:`M${x1+r} ${cy} L${x2-r} ${cy}`,lx:(x1+x2)/2,ly:cy-10};const up=side(c);const h=Math.min((x2-x1)*.45,H/2-pad-14);const mx=(x1+x2)/2;return{d:`M${x1+r*.5} ${cy+up*r*.87} Q${mx} ${cy+up*h*2} ${x2-r*.5} ${cy+up*r*.87}`,lx:mx,ly:cy+up*h+(up<0?-14:24)}};
+  const{dp,pick}=dpCoins(coins,amt);const dpp=dpPath(pick,dp,amt),gp=greedyPath(coins,amt);
+  const edges=p=>{const s=[];let x=amt;for(const c of p){s.push([x,c]);x-=c}return s};
+  let o='';
+  for(let v=amt;v>=1;v--)for(const c of coins)if(c<=v)o+=`<path d="${geo(v,c).d}" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="1.6"/>`;
+  for(const[v,c]of edges(dpp))o+=`<path d="${geo(v,c).d}" fill="none" style="stroke:var(--green)" stroke-width="6" stroke-linecap="round"/>`;
+  for(const[v,c]of edges(gp))o+=`<path d="${geo(v,c).d}" fill="none" style="stroke:var(--amber)" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>`;
+  const labs=new Map();for(const[v,c]of edges(dpp))labs.set(v+'-'+c,[v,c]);for(const[v,c]of edges(gp))labs.set(v+'-'+c,[v,c]);
+  for(const[v,c]of labs.values()){const g=geo(v,c);o+=`<text x="${g.lx}" y="${g.ly}" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">−${c}</text>`}
+  for(let v=0;v<=amt;v++)o+=`<circle cx="${X(v)}" cy="${cy}" r="${r}" style="fill:var(--bg);stroke:var(--ink)" stroke-width="2.5"/><text x="${X(v)}" y="${cy+5}" text-anchor="middle" font-size="14" font-weight="800" fill="currentColor">${v}</text>`;
+  dag.innerHTML=o;
+  const same=gp&&dpp&&gp.length===dpp.length;
+  $('dag-stat').innerHTML=`Tham lam: <b>${gp.join(' + ')}</b> = ${gp.length} đồng. DP: <b>${dpp.join(' + ')}</b> = ${dpp.length} đồng. `+(same?'<b style="color:var(--green)">Tham lam tối ưu.</b>':'<b style="color:var(--red)">Tham lam thua một đồng.</b>');
+}
+document.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click',()=>{dagKey=b.dataset.d;document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));drawDag()}));
+const roDag=new ResizeObserver(drawDag);roDag.observe(dag);
+
+/* ---------- interval lab ---------- */
+const CASES={A:[[0,10],[1,3],[4,6],[7,9]],B:[[0,5],[4,7],[6,11],[12,14]],C:[[0,3],[4,7],[8,11],[12,15],[6,9],[2,5],[2,5],[2,5],[10,13],[10,13],[10,13]],R:[]};
+const RULE={start:'Bắt đầu sớm nhất',short:'Ngắn nhất',few:'Ít xung đột nhất',end:'Kết thúc sớm nhất'};
+const WHY={'A-start':'[0, 10) bắt đầu sớm nhất nhưng chiếm gần hết thời gian, chặn cả ba cuộc ngắn.','B-short':'[4, 7) ngắn nhất nhưng nằm vắt qua ranh giới giữa [0, 5) và [6, 11), chặn cả hai.','C-few':'[6, 9) chỉ xung đột với 2 cuộc, ít nhất, nhưng hai cuộc đó lại thuộc lời giải tối ưu. Các cuộc bị trùng lặp làm số xung đột đánh lừa tiêu chí.'};
+const ov=(a,b)=>a[0]<b[1]&&b[0]<a[1];
+function runRule(rule,iv){
+  const idx=iv.map((_,i)=>i);const out=[];
+  if(rule==='start'||rule==='end'){const k=rule==='start'?0:1;idx.sort((a,b)=>iv[a][k]-iv[b][k]||iv[a][1-k]-iv[b][1-k]||a-b);let last=-Infinity;for(const i of idx)if(iv[i][0]>=last){out.push(i);last=iv[i][1]}}
+  else if(rule==='short'){idx.sort((a,b)=>(iv[a][1]-iv[a][0])-(iv[b][1]-iv[b][0])||iv[a][0]-iv[b][0]||a-b);for(const i of idx)if(out.every(j=>!ov(iv[i],iv[j])))out.push(i)}
+  else{let R=new Set(idx);while(R.size){let best=-1,bc=Infinity;for(const i of R){let c=0;for(const j of R)if(j!==i&&ov(iv[i],iv[j]))c++;if(c<bc||(c===bc&&(iv[i][1]<iv[best][1]||(iv[i][1]===iv[best][1]&&i<best)))){bc=c;best=i}}out.push(best);for(const j of[...R])if(j===best||ov(iv[best],iv[j]))R.delete(j)}}
+  return out;
+}
+function optimal(iv){const n=iv.length;let best=[];for(let m=0;m<(1<<n);m++){const s=[];for(let i=0;i<n;i++)if(m&(1<<i))s.push(i);if(s.length<=best.length)continue;let ok=true;for(let a=0;a<s.length&&ok;a++)for(let b=a+1;b<s.length;b++)if(ov(iv[s[a]],iv[s[b]])){ok=false;break}if(ok)best=s}return best}
+function randomCase(){const n=8,out=[];for(let i=0;i<n;i++){const s=Math.floor(Math.random()*20),l=1+Math.floor(Math.random()*7);out.push([s,s+l])}out.sort((a,b)=>a[0]-b[0]);return out}
+CASES.R=randomCase();
+let lab={rule:'start',cs:'A',opt:false};const labsvg=$('labsvg'),labfig=$('labfig');
+function drawLab(){
+  const iv=CASES[lab.cs];const W=labsvg.clientWidth;if(!W)return;
+  const rowH=28,top=10,axis=30;const H=top+iv.length*rowH+axis;
+  const T=Math.max(...iv.map(x=>x[1]))+1,pad=14;const X=t=>pad+t*(W-2*pad)/T;
+  const pick=runRule(lab.rule,iv);const ord=new Map(pick.map((i,k)=>[i,k+1]));const opt=new Set(optimal(iv));
+  const step=Math.max(1,Math.ceil(T/((W-2*pad)/34)));
+  let o='';
+  for(let t=0;t<=T;t++){o+=`<line x1="${X(t)}" y1="${top-4}" x2="${X(t)}" y2="${H-axis+4}" stroke="currentColor" stroke-opacity="${t%step===0?.14:.05}"/>`;if(t%step===0)o+=`<text x="${X(t)}" y="${H-10}" text-anchor="middle" font-size="13" fill="currentColor" opacity=".7">${t}</text>`}
+  iv.forEach((v,i)=>{const y=top+i*rowH+3,x=X(v[0]),w=X(v[1])-X(v[0]);const on=ord.has(i);
+    o+=`<rect x="${x+1}" y="${y}" width="${Math.max(2,w-2)}" height="20" rx="5" style="fill:${on?'var(--green)':'var(--line)'}${lab.opt&&opt.has(i)?';stroke:var(--blue)':''}" stroke-width="${lab.opt&&opt.has(i)?3.5:0}"><title>[${v[0]}, ${v[1]})</title></rect>`;
+    if(on&&w>=18)o+=`<text x="${x+w/2}" y="${y+15}" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" style="stroke:none">${ord.get(i)}</text>`;});
+  labfig.style.height=H+'px';labsvg.innerHTML=o;
+  const g=pick.length,b=opt.size;const why=WHY[lab.cs+'-'+lab.rule];
+  $('labsay').innerHTML=`Tiêu chí <strong>${RULE[lab.rule]}</strong>: tham lam xếp được <b${g===b?' class="ok"':''}>${g}</b> cuộc, tối ưu là <b class="ok">${b}</b>. `+(g<b?`Phản ví dụ, tiêu chí này bị loại. ${why||''}`:'Khớp tối ưu trên bộ này, nhưng một bộ khớp chưa chứng minh được gì.');
+}
+function syncLab(){document.querySelectorAll('#lab-rule button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.r===lab.rule)));document.querySelectorAll('#lab-case button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===lab.cs)));$('lab-opt').setAttribute('aria-pressed',String(lab.opt));drawLab()}
+$('lab-rule').addEventListener('click',e=>{const b=e.target.closest('button');if(b){lab.rule=b.dataset.r;syncLab()}});
+$('lab-case').addEventListener('click',e=>{const b=e.target.closest('button');if(b){lab.cs=b.dataset.c;syncLab()}});
+$('lab-opt').addEventListener('click',()=>{lab.opt=!lab.opt;syncLab()});
+$('lab-new').addEventListener('click',()=>{CASES.R=randomCase();lab.cs='R';syncLab()});
+syncLab();
+const roLab=new ResizeObserver(drawLab);roLab.observe(labsvg);
+
+/* ---------- coin counterexample hunter ---------- */
+let hunt={coins:[1,3,4],sel:null};
+function huntRun(){
+  const cs=[...hunt.coins].sort((a,b)=>a-b);const has1=cs[0]===1;const m=cs.length;
+  const bound=m>=2?cs[m-1]+cs[m-2]:cs[0]*2;const N=Math.min(150,Math.max(24,bound));
+  const{dp,pick}=dpCoins(cs,N);const res=[];let first=null,bad=0;
+  for(let x=1;x<=N;x++){const g=greedyPath(cs,x),d=dpPath(pick,dp,x);let k='ok';if(!d)k='none';else if(!g)k='fail';else if(g.length>d.length)k='bad';if((k==='bad'||k==='fail')){bad++;if(first===null)first=x}res.push({x,g,d,k})}
+  const sel=hunt.sel??first??null;
+  $('hunt-grid').innerHTML=res.map(r=>`<button type="button" class="${r.k}${r.x===sel?' sel':''}" data-x="${r.x}" aria-label="Tổng ${r.x}">${r.x}</button>`).join('');
+  const show=x=>{const r=res[x-1];if(!r.d)return `Tổng ${x}: không có cách đổi nào.`;const gs=r.g?`${r.g.join(' + ')} (${r.g.length} đồng)`:'bế tắc, không đổi được';return `Tổng <strong>${x}</strong>: tham lam ${gs}; tối ưu ${r.d.join(' + ')} (${r.d.length} đồng).`};
+  let msg='';
+  if(first===null)msg=has1?`<b class="ok">Không có phản ví dụ.</b> Đã kiểm tra mọi tổng từ 1 tới ${N}, không nhỏ hơn ${bound} là tổng hai mệnh giá lớn nhất, nên tham lam đúng với <strong>mọi</strong> tổng.`:`<b class="ok">Không có phản ví dụ</b> trong khoảng 1 tới ${N}.`;
+  else msg=`<b>Phản ví dụ nhỏ nhất: ${first}.</b> Có ${bad}/${N} tổng tham lam làm sai. `;
+  if(sel!==null)msg+=' '+show(sel);
+  $('hunt-say').innerHTML=msg;
+  document.querySelectorAll('#hunt-pre button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===cs.join(','))));
+}
+$('hunt-pre').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;hunt.coins=b.dataset.s.split(',').map(Number);hunt.sel=null;$('hunt-err').textContent='';huntRun()});
+$('hunt-grid').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;hunt.sel=Number(b.dataset.x);huntRun()});
+$('hunt-form').addEventListener('submit',e=>{e.preventDefault();const raw=$('hunt-in').value.split(/[\s,;]+/).filter(Boolean).map(Number);const ok=raw.length>0&&raw.length<=8&&raw.every(v=>Number.isInteger(v)&&v>0&&v<=200);
+  if(!ok){$('hunt-err').textContent='Nhập 1–8 số nguyên dương ≤ 200, cách nhau bởi dấu phẩy.';return}
+  $('hunt-err').textContent='';hunt.coins=[...new Set(raw)];hunt.sel=null;huntRun()});
+huntRun();
+
+/* ---------- jump game layers ---------- */
+const JA=[2,3,1,1,2,4,2,0,1,1];
+{const layer=Array(JA.length).fill(0);let end=0,far=0,k=0;for(let i=0;i<JA.length-1;i++){far=Math.max(far,i+JA[i]);if(i===end){k++;for(let j=end+1;j<=Math.min(far,JA.length-1);j++)layer[j]=k;end=far}}
+  const LC=['var(--red)','var(--blue)','var(--green)','#a86f00','#3b4656'];
+  $('jump').innerHTML=JA.map((v,i)=>`<div class="c"><b style="background:${LC[layer[i]%LC.length]}">${v}</b><small>ô ${i}</small><small>bước ${layer[i]}</small></div>`).join('');
+  $('jump-stat').innerHTML=`Ô cùng màu thuộc cùng một lớp. Ô cuối thuộc lớp <b>${layer[JA.length-1]}</b>, nên cần ${layer[JA.length-1]} bước nhảy.`;}
+}
+</script>
+</body>
+</html>
