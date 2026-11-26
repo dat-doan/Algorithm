@@ -1,22 +1,17 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tư duy Đệ quy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* VOICE everyday learning: calm, exact, a patient teacher; third page of the DP / Greedy series
-   IDEA the same metro map: designing a recursive function is a line of six stations, with an exit to DP when subproblems repeat
-   PICTURE route map; then a live call stack and a Tower of Hanoi that show the machine keeping the contract you trusted
-   COLOUR white ground, black ink; red = thinking line, blue = pattern line, green = practice / returned values, amber = the frame running now
+/* VOICE everyday learning: calm, exact, a patient teacher; the foundation page of the Recursion / Backtracking / DP / Greedy series
+   IDEA the same metro map: designing one recursive function is a line of six stations; a violet foundation line then looks at the whole call tree and leads to Backtracking and DP
+   PICTURE route map; a live call stack and a Tower of Hanoi; then one staircase tree asked four questions, a tree that shrinks under memo, the tree folded into a DAG, a table filled right to left
+   COLOUR white ground, black ink; red = thinking line, blue = pattern line, violet = foundation line, green = practice / returned values, amber = the frame running now
    TYPE Be Vietnam Pro 800 + Be Vietnam Pro, Roboto Mono for code and stack frames
    LAYOUT title and conclusion on top, map full width; every section hangs off a thick left rail */
-:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0e1116);--ink:light-dark(#111418,#eceff3);--mute:light-dark(#566070,#9ba5b5);--line:light-dark(#dfe3e8,#2a313c);--soft:light-dark(#f3f5f8,#161b23);--red:#e6261f;--blue:light-dark(#0a5cff,#5b93ff);--green:light-dark(#00a05a,#22c47c);--amber:#ffb400;--mono:"Roboto Mono",ui-monospace,Menlo,monospace;--pl:76px;--rx:24px;--rw:10px}
-:root[data-theme=light]{color-scheme:light}
-:root[data-theme=dark]{color-scheme:dark}
+:root{--bg:#ffffff;--ink:#111418;--mute:#566070;--line:#dfe3e8;--soft:#f3f5f8;--red:#e6261f;--blue:#0a5cff;--green:#00a05a;--amber:#ffb400;--violet:#7a3ee0;--mono:"Roboto Mono",ui-monospace,Menlo,monospace;--pl:76px;--rx:24px;--rw:10px;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--ink:#eceff3;--mute:#9ba5b5;--line:#2a313c;--soft:#161b23;--blue:#5b93ff;--green:#22c47c;--violet:#a98bff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1116;--ink:#eceff3;--mute:#9ba5b5;--line:#2a313c;--soft:#161b23;--blue:#5b93ff;--green:#22c47c;--violet:#a98bff;color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 html{scroll-padding-top:76px;scroll-behavior:smooth}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -35,8 +30,10 @@ header.hero{padding:44px 0 8px}
 .lede{font-size:19px;max-width:64ch;margin:18px 0 6px}
 .fig{position:relative}
 .fig>svg{position:absolute;inset:0;width:100%;height:100%}
-.map{height:410px;margin:8px 0 4px}
-@media(max-width:1039px){.map{height:480px}}
+.map{height:450px;margin:8px 0 4px}
+@media(max-width:1039px){.map{height:920px}}
+.map a:focus{outline:none}
+.map a:focus-visible circle{stroke:var(--amber)}
 svg text{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
 .stn{cursor:pointer}
 .stn:focus{outline:none}
@@ -56,6 +53,7 @@ pre{overflow-x:auto}
 .st.x>h2::before{border-color:var(--ink);width:36px;height:36px;left:calc(var(--rx) + var(--rw) / 2 - var(--pl) - 18px);top:calc(.55em - 18px)}
 .st.blue{--c:var(--blue)}
 .st.green{--c:var(--green)}
+.st.violet{--c:var(--violet)}
 .st.first::before{top:52px}
 .st.last::before{bottom:auto;height:60px}
 .line-name{font-size:14px;font-weight:700;color:var(--c);margin:0 0 6px}
@@ -150,22 +148,48 @@ button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .route strong{display:block}
 .route .pb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .route .pb span{font-size:14px;border:1px solid var(--line);border-radius:8px;padding:2px 9px}
+.ask{font-weight:700;font-size:19px;background:var(--soft);padding:14px 18px;border-radius:12px;margin:14px 0;max-width:76ch;border-left:6px solid var(--c)}
+.try{border:2px dashed var(--line);border-radius:14px;padding:12px 18px;margin:18px 0;max-width:80ch}
+.try>summary{cursor:pointer;font-weight:600}
+.try>summary b{color:var(--c,var(--red));font-weight:800;margin-right:4px}
+.try>summary em{font-style:normal;color:var(--mute);font-weight:500;font-size:14px}
+.try[open]>summary{margin-bottom:10px}
+.try .ans{border-top:1px solid var(--line);padding-top:12px}
+.try .ans p:last-child{margin-bottom:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px}
+@media(max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.frtwo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:center}
+@media(max-width:900px){.frtwo{grid-template-columns:minmax(0,1fr)}}
+.stats{display:flex;flex-wrap:wrap;gap:6px 26px;font-size:15px;margin:6px 0 4px}
+.stats b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin-right:6px}
+.bars{display:grid;gap:5px;margin:12px 0 4px;max-width:680px}
+.bars .row{display:grid;grid-template-columns:5.5em minmax(0,1fr) 11.5em;gap:10px;align-items:center;font:13.5px var(--mono);font-variant-numeric:tabular-nums}
+.bars .trk{height:16px;background:var(--soft);border-radius:4px;overflow:hidden}
+.bars .fill{height:100%;background:var(--red);border-radius:4px}
+.bars .fill.ok{background:var(--green)}
+.bars .num{color:var(--mute)}
+.sw.ans{background:var(--green);border-color:var(--green)}
+.sw.dead{border:2px dashed var(--red)}
+.sw.ghost{border:2px dashed var(--mute);opacity:.6}
+.sw.dup{background:var(--red);border-color:var(--red)}
+.sw.memo{border:2px dashed var(--green)}
+.sw.hl{background:var(--blue);border-color:var(--blue)}
+.chips .d{background:var(--red);border-color:var(--red);color:#fff}
 footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color:var(--mute)}
 @media(max-width:600px){table{font-size:13px}th,td{padding:6px 4px}.stack thead{display:none}.stack tr{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0 3px 8.5em;text-align:left;font-size:14px}.stack td::before{content:attr(data-l);float:left;width:8em;margin-left:-8.5em;color:var(--mute);font-weight:600;font-size:13px;line-height:1.35;padding-top:2px}.stack td:first-child{padding-left:0;font-size:15px}.stack td:first-child::before{display:none}.lede{font-size:17px}.eq{font-size:15px}.ms .r{grid-template-columns:minmax(0,1fr)}}
 </style>
-</head>
-<body>
 
 <header class="hero wrap">
   <h1>Tư duy Đệ quy: viết hàm bằng cách tin vào chính nó</h1>
-  <p class="lede">Đệ quy khó vì ta cố <strong>lần theo</strong> từng lời gọi trong đầu. Người giải đệ quy giỏi làm ngược lại: họ viết một <strong>hợp đồng</strong> cho hàm, rồi <strong>tin</strong> rằng lời gọi trên bài nhỏ hơn giữ đúng hợp đồng đó. Sáu ga dưới đây biến niềm tin ấy thành một quy trình có thể kiểm chứng, áp dụng được cho cả những bài chưa gặp bao giờ.</p>
-  <div class="fig map"><svg id="map" role="img" aria-label="Bản đồ tuyến tư duy đệ quy: sáu ga trên tuyến đỏ, tuyến xanh rẽ từ ga Thu nhỏ tới năm mẫu, tuyến đen rẽ từ ga Kiểm tra sang Quy hoạch động"></svg></div>
-  <p class="cap">Bấm vào một ga để tới phần đó. Đây là bài thứ ba trong chuỗi, đi cùng <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Tư duy Quy hoạch động</a> và <a href="https://claude.ai/artifact/N6u6foS9ex5Qd96VnVidJ3">Tư duy Tham lam</a>; nên đọc bài này trước hai bài kia. Code mẫu viết bằng Swift.</p>
+  <p class="lede">Đệ quy khó vì ta cố <strong>lần theo</strong> từng lời gọi trong đầu. Người giải đệ quy giỏi làm ngược lại: họ viết một <strong>hợp đồng</strong> cho hàm, rồi <strong>tin</strong> rằng lời gọi trên bài nhỏ hơn giữ đúng hợp đồng đó. Sáu ga trên tuyến đỏ biến niềm tin ấy thành một quy trình kiểm chứng được. Tuyến tím đi tiếp: nhìn <strong>cả cây lời gọi</strong> mà hàm sinh ra, vì Quay lui và Quy hoạch động chỉ là hai cách khác nhau để đi trên cái cây đó.</p>
+  <div class="fig map"><svg id="map" role="img" aria-label="Bản đồ tuyến tư duy đệ quy: sáu ga trên tuyến đỏ; tuyến xanh rẽ từ ga Thu nhỏ tới năm mẫu; tuyến tím nối từ ga Kiểm tra qua năm ga nền móng, rẽ sang bài Quay lui và bài Quy hoạch động"></svg></div>
+  <p class="cap">Bấm vào một ga để tới phần đó; hai ga cuối tuyến tím mở bài tiếp theo. Đây là bài nền móng của chuỗi: đọc trước <a href="https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8">Tư duy Quay lui</a> và <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Tư duy Quy hoạch động</a>; <a href="https://claude.ai/artifact/N6u6foS9ex5Qd96VnVidJ3">Tư duy Tham lam</a> đọc sau cùng. Mỗi ô <strong>Tự thử</strong> giấu sẵn đáp án: viết câu trả lời ra giấy trước khi mở. Code mẫu viết bằng Swift, bài tập đánh số theo LeetCode.</p>
 </header>
 
 <nav class="jump" aria-label="Mục lục"><div class="wrap"><div class="scroll">
   <a href="#ban-chat">Bản chất</a><a href="#hop-dong">Hợp đồng</a><a href="#thu-nho">Thu nhỏ</a><a href="#tin-tuong">Tin tưởng</a><a href="#ket-hop">Kết hợp</a><a href="#diem-dung">Điểm dừng</a><a href="#kiem-tra">Kiểm tra</a>
   <a href="#boc-mot" style="--c:var(--blue)">Bóc một phần tử</a><a href="#chia-doi" style="--c:var(--blue)">Chia đôi</a><a href="#theo-cay" style="--c:var(--blue)">Theo cây</a><a href="#quay-lui" style="--c:var(--blue)">Quay lui</a><a href="#tang-cuong" style="--c:var(--blue)">Tăng cường hàm</a><a href="#bang-tra" style="--c:var(--blue)">Bảng tra</a>
+  <a href="#hai-luong" style="--c:var(--violet)">Hai luồng</a><a href="#theo-lua-chon" style="--c:var(--violet)">Theo lựa chọn</a><a href="#bai-con-trung" style="--c:var(--violet)">Bài con trùng</a><a href="#khong-gian" style="--c:var(--violet)">Không gian trạng thái</a><a href="#khu-de-quy" style="--c:var(--violet)">Khử đệ quy</a>
   <a href="#bi-ket" style="--c:var(--green)">Khi bị kẹt</a><a href="#lo-trinh" style="--c:var(--green)">Lộ trình</a><a href="#mau" style="--c:var(--green)">Mẫu suy luận</a>
 </div></div></nav>
 
@@ -224,6 +248,22 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
     <li><strong>Giá trị trả về</strong> là những gì bài lớn cần từ bài con. Hanoi không cần trả về gì; <code>sum</code> trả về một số.</li>
     <li>Viết được hợp đồng thành một câu tiếng Việt rõ ràng thì mới viết thân hàm.</li>
   </ul>
+  <h3>Bốn kiểu hợp đồng</h3>
+  <p>Hợp đồng nói hàm <em>trả về</em> gì hoặc <em>làm</em> gì. Có bốn kiểu, và mỗi kiểu dẫn tới một nhánh khác nhau của các bài sau:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Kiểu</th><th>Hợp đồng nói</th><th>Ví dụ</th><th>Dẫn tới</th></tr></thead>
+    <tbody>
+      <tr><td>Trả về giá trị</td><td>“trả về … của input”, không sửa gì bên ngoài</td><td><code>sum</code>, <code>maxDepth</code>, <code>power</code></td><td>Quy hoạch động, khi bài con lặp lại</td></tr>
+      <tr><td>Làm một việc</td><td>“thực hiện … rồi kết thúc”</td><td>Hanoi in các bước</td><td>bài cần in ra mọi bước</td></tr>
+      <tr><td>Sửa tại chỗ</td><td>“biến đổi cấu trúc, trả về phần người gọi cần”</td><td><code>reverseList</code>, sắp xếp tại chỗ</td><td>chia để trị</td></tr>
+      <tr><td>Duyệt và ghi nhận</td><td>“đi qua …, ghi mỗi … vào result, trả trạng thái chung về như cũ”</td><td><code>subsets</code>, đường kính cây</td><td>Quay lui</td></tr>
+    </tbody>
+  </table></div>
+  <p>Kiểu thứ nhất dễ kiểm chứng nhất: chỉ cần so giá trị trả về với hợp đồng, không phải theo dõi biến nào khác. Khi được chọn, ưu tiên nó. Ga <a href="#hai-luong">Hai luồng</a> trên tuyến tím giải thích vì sao lựa chọn này quyết định bạn có dùng được Quy hoạch động hay không.</p>
+  <details class="try"><summary><b>Tự thử</b> Viết hợp đồng cho: (a) đếm số node của cây nhị phân, (b) kiểm tra một chuỗi có đối xứng không, bằng đệ quy. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>(a) <code>count(root)</code>: “trả về số node trong cây con gốc <code>root</code>; cây rỗng (<code>nil</code>) có 0 node”.</p>
+    <p>(b) Hợp đồng tự nhiên <code>isPal(s)</code> buộc bạn tạo chuỗi con mới ở mỗi lời gọi, tốn O(n²). Tổng quát hơn một chút: <code>isPal(s, lo, hi)</code>: “trả về true nếu đoạn <code>s[lo...hi]</code> đối xứng; đoạn rỗng hoặc một ký tự luôn đối xứng”. Bài con là <code>isPal(s, lo + 1, hi − 1)</code>. Lại là bài học “hợp đồng tổng quát hơn đề bài một chút”.</p>
+  </div></details>
 </section>
 
 <!-- ============ THU NHỎ ============ -->
@@ -244,6 +284,11 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
     </tbody>
   </table></div>
   <div class="key"><strong>Nếu không thấy bài con nào cùng hợp đồng</strong><p>Thường là do hợp đồng quá hẹp. Thêm tham số (như “n đĩa trên cùng”, “trong khoảng lo…hi”) hoặc cho hàm trả về thêm thông tin. Xem ga <a href="#tang-cuong">Tăng cường hàm</a>.</p></div>
+  <details class="try"><summary><b>Tự thử</b> Tìm bài con cùng hợp đồng cho: (a) số chữ số của số nguyên dương n, (b) mảng đã sắp tăng chưa, (c) đảo một chuỗi. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>(a) Bỏ chữ số cuối: <code>digits(n) = 1 + digits(n / 10)</code>, dừng khi <code>n &lt; 10</code>.</p>
+    <p>(b) Bóc phần tử đầu: <code>sorted(a, i)</code> đúng khi <code>a[i] &lt;= a[i + 1]</code> và <code>sorted(a, i + 1)</code>; dừng khi <code>i &gt;= a.count − 1</code>. Để ý tham số <code>i</code>: không cắt mảng mới mỗi lần.</p>
+    <p>(c) Hai cách đều đúng: bóc ký tự đầu (<code>reverse(phần còn lại) + đầu</code>) hoặc chia đôi (<code>reverse(nửa phải) + reverse(nửa trái)</code>). Một bài thường có nhiều cách thu nhỏ; chọn cách cho cây đệ quy rẻ nhất.</p>
+  </div></details>
 </section>
 
 <!-- ============ TIN TƯỞNG ============ -->
@@ -281,6 +326,9 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
       <p>Lời giải chỉ đúng nếu <strong>trong lúc khối n−1 di chuyển, đĩa n không cản đường</strong>. Hợp đồng đã lo việc đó: đĩa n to hơn mọi đĩa trong khối, nên mọi đĩa trong khối đều đặt lên nó được. Đây là kiểu kiểm tra duy nhất bạn cần: <strong>các giả định mà hợp đồng của bài con cần có thật sự đúng tại thời điểm gọi không?</strong></p>
     </div>
   </div>
+  <div class="key"><strong>Tin có căn cứ: chứng minh ba dòng bằng quy nạp mạnh</strong><p>“Tin” không phải là đoán. Mọi hàm đệ quy đều chứng minh được theo cùng một khuôn. Ví dụ với hàm luỹ thừa nhanh <code>power(x, n)</code> ở ga Kiểm tra:</p>
+    <p style="font-family:var(--mono);font-size:14.5px;line-height:1.8;overflow-x:auto;white-space:nowrap">Giả thiết : power(x, m) = xᵐ với mọi 0 ≤ m &lt; n<br>Điểm dừng: n = 0 → trả 1 = x⁰. Đúng.<br>Bước     : n &gt; 0 → n/2 &lt; n, nên half = x^(n/2) theo giả thiết<br>           n chẵn: half·half = xⁿ;  n lẻ: half·half·x = x^(2·(n/2)+1) = xⁿ. Đúng.</p>
+    <p>Chữ “<strong>mọi</strong> m &lt; n” (quy nạp <em>mạnh</em>) là điểm mấu chốt: bài con không nhất thiết là n − 1, chỉ cần nhỏ hơn theo thước đo. Đây cũng là lập luận cho phép bạn tin công thức truy hồi của Quy hoạch động, nơi một bài có thể cần nhiều bài con có kích thước khác nhau.</p></div>
   <p>Giờ xem cỗ máy giữ lời hứa thế nào. Cột bên phải là call stack ngay lúc mỗi đĩa được chuyển:</p>
   <div class="panel">
     <div class="tog" role="group" aria-label="Số đĩa" id="hn-n"><span class="tl">Số đĩa</span><button type="button" data-n="3" aria-pressed="true">3 đĩa · 7 bước</button><button type="button" data-n="4" aria-pressed="false">4 đĩa · 15 bước</button></div>
@@ -304,6 +352,11 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
   </table></div>
   <p>Hanoi cho thấy <strong>thứ tự</strong> cũng là một phần của kết hợp: việc làm <em>trước</em> lời gọi đệ quy chạy ở chiều đi xuống, việc làm <em>sau</em> chạy ở chiều đi lên. In một danh sách liên kết theo thứ tự ngược chỉ cần đổi chỗ dòng <code>print</code> và lời gọi đệ quy.</p>
   <div class="key"><strong>Phép thử cho ga này</strong><p>Đọc to công thức kết hợp, thay mỗi lời gọi đệ quy bằng cụm từ trong hợp đồng: “tổng của a bằng a[0] cộng <em>tổng của phần còn lại</em>”. Nếu câu nói nghe hiển nhiên đúng, phần kết hợp đúng.</p></div>
+  <details class="try"><summary><b>Tự thử</b> Viết bước kết hợp: (a) max của mảng, biết <code>m</code> là max của phần còn lại; (b) số node của cây, biết <code>L</code>, <code>R</code> của hai cây con; (c) hai cây có giống hệt nhau không. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>(a) <code>max(a[0], m)</code>. Cẩn thận điểm dừng: mảng rỗng không có max, nên hợp đồng chỉ nhận mảng khác rỗng và dừng ở mảng một phần tử.</p>
+    <p>(b) <code>1 + L + R</code>: chính node này, cộng hai cây con.</p>
+    <p>(c) <code>p.val == q.val &amp;&amp; same(p.left, q.left) &amp;&amp; same(p.right, q.right)</code>. Điểm dừng có hai trường hợp: cả hai <code>nil</code> → true; đúng một bên <code>nil</code> → false.</p>
+  </div></details>
 </section>
 
 <!-- ============ ĐIỂM DỪNG ============ -->
@@ -316,6 +369,10 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
   </ul>
   <div class="eq">sum(a):      thước đo = a.count     → giảm 1 mỗi lần, dừng ở 0<br>hanoi(n):    thước đo = n           → giảm 1 mỗi lần, dừng ở 0<br>power(x, n): thước đo = n           → chia đôi mỗi lần, dừng ở 0<br>binarySearch(lo, hi): thước đo = hi − lo → giảm ít nhất 1, dừng khi lo &gt; hi</div>
   <p>Trong code, điểm dừng nằm ở dòng <em>đầu tiên</em> của hàm. Trong suy nghĩ, nó đến <em>sau</em>, vì bạn chỉ biết input nào là “nhỏ nhất” khi đã biết bài được thu nhỏ theo cách nào.</p>
+  <details class="try"><summary><b>Tự thử</b> Tìm lỗi: <code>func f(_ n: Int) -&gt; Int { if n == 1 { return 1 }; return n * f(n - 2) }</code> <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>Với n chẵn: 4 → 2 → 0 → −2 → …, nhảy qua 1 và không bao giờ dừng. Thước đo n có giảm, nhưng điểm dừng không bắt được mọi giá trị nó đi qua. Sửa: <code>if n &lt;= 1 { return 1 }</code>.</p>
+    <p>Bài học: khi bước thu nhỏ lớn hơn 1, điểm dừng phải là một <strong>vùng</strong> (n ≤ 1), không phải một điểm. Quy hoạch động gặp lại đúng vấn đề này dưới dạng “bước quá đích”, ví dụ <code>i + 2 &gt; n</code>.</p>
+  </div></details>
 </section>
 
 <!-- ============ KIỂM TRA ============ -->
@@ -358,8 +415,29 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;font-size:14px;color
       <p>Với n âm (đề LeetCode cho phép), tính <code>1 / power(x, −n)</code>, nhưng cẩn thận: <code>−Int.min</code> bị tràn số.</p>
     </div>
   </div>
-  <div class="key"><strong>Khi cây đệ quy có các node trùng nhau: rẽ sang Quy hoạch động</strong><p>Nếu cùng một bộ tham số xuất hiện ở nhiều nhánh của cây, bạn đang giải lại bài cũ. Thêm một bảng nhớ (memo) với khoá là bộ tham số, và hàm đệ quy của bạn trở thành <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a>. Mọi thứ bạn học ở đây (hợp đồng, thu nhỏ, tin tưởng) chính là ga Trạng thái và ga Công thức bên đó.</p></div>
-  <p><strong>Giới hạn độ sâu:</strong> mỗi khung chiếm bộ nhớ stack. Đệ quy sâu hàng chục nghìn tầng (ví dụ duyệt danh sách liên kết rất dài) có thể làm ứng dụng crash vì tràn stack, đặc biệt trên luồng phụ của iOS vốn có stack nhỏ hơn luồng chính. Khi độ sâu có thể bằng n lớn, cân nhắc chuyển sang vòng lặp với một stack tự quản lý.</p>
+  <h3>Đọc chi phí từ hệ thức truy hồi</h3>
+  <p>Viết chi phí T(n) theo đúng cấu trúc của hàm: mỗi lời gọi đệ quy là một số hạng T(bài con), phần việc làm tại node là số hạng còn lại. Chín hệ thức dưới đây phủ gần hết các hàm bạn sẽ viết:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Hệ thức</th><th>Hình dạng cây</th><th>Chi phí</th><th>Ví dụ</th></tr></thead>
+    <tbody>
+      <tr><td>T(n) = T(n−1) + O(1)</td><td>chuỗi n node</td><td>O(n)</td><td><code>sum</code>, <code>reverseList</code></td></tr>
+      <tr><td>T(n) = T(n−1) + O(n)</td><td>chuỗi, việc giảm dần</td><td>O(n²)</td><td>sắp xếp chọn viết đệ quy</td></tr>
+      <tr><td>T(n) = T(n/2) + O(1)</td><td>chuỗi log n node</td><td>O(log n)</td><td><code>power</code>, tìm kiếm nhị phân</td></tr>
+      <tr><td>T(n) = T(n/2) + O(n)</td><td>chuỗi, việc giảm một nửa</td><td>O(n)</td><td>quickselect (trung bình)</td></tr>
+      <tr><td>T(n) = 2T(n/2) + O(1)</td><td>cây cân bằng, n node</td><td>O(n)</td><td>duyệt cây cân bằng</td></tr>
+      <tr><td>T(n) = 2T(n/2) + O(n)</td><td>log n tầng, mỗi tầng n việc</td><td>O(n log n)</td><td>merge sort</td></tr>
+      <tr><td>T(n) = 2T(n−1) + O(1)</td><td>cây nhị phân đầy</td><td>O(2ⁿ)</td><td>Hanoi, sinh tập con</td></tr>
+      <tr><td>T(n) = T(n−1) + T(n−2) + O(1)</td><td>cây nhị phân lệch</td><td>O(1,618ⁿ)</td><td>Fibonacci không nhớ</td></tr>
+      <tr><td>T(n) = n · T(n−1) + O(1)</td><td>n nhánh, rồi n−1 nhánh, …</td><td>O(n!)</td><td>sinh hoán vị</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Đếm theo tầng</strong> khi không nhớ bảng: vẽ cây, cộng việc ở mỗi tầng, rồi cộng các tầng. Merge sort: tầng nào cũng trộn tổng cộng n phần tử, có log n tầng, nên n log n. Nếu việc mỗi tầng giảm theo cấp số nhân, như T(n) = T(n/2) + O(n), tầng đầu chiếm phần lớn và tổng chỉ là O(n).</p>
+  <div class="key"><strong>Khi cây đệ quy có các node trùng nhau</strong><p>Hai dòng cuối của bảng có chi phí hàm mũ. Một nửa trong số đó là cần thiết (Hanoi thật sự có 2ⁿ − 1 bước); nửa kia là lãng phí (Fibonacci chỉ có n giá trị khác nhau). Phân biệt hai trường hợp này là việc của <a href="#hai-luong">tuyến tím</a>: nó đi từng ga từ quan sát “có node trùng” tới <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a> và <a href="https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8">Quay lui</a>.</p></div>
+  <p><strong>Giới hạn độ sâu:</strong> mỗi khung chiếm bộ nhớ stack. Đệ quy sâu hàng chục nghìn tầng (ví dụ duyệt danh sách liên kết rất dài) có thể làm ứng dụng crash vì tràn stack, đặc biệt trên luồng phụ của iOS vốn có stack nhỏ hơn luồng chính. Khi độ sâu có thể bằng n lớn, chuyển sang vòng lặp (ga <a href="#khu-de-quy">Khử đệ quy</a>).</p>
+  <details class="try"><summary><b>Tự thử</b> Ước lượng chi phí: (a) <code>f(n)</code> gọi <code>f(n / 2)</code> ba lần và làm O(1) việc; (b) <code>f(n)</code> gọi <code>f(n − 1)</code> hai lần với cùng tham số. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>(a) 3 nhánh mỗi node, log₂ n tầng: 3^(log₂ n) = n^(log₂ 3) ≈ n^1,58 node. Đây là chi phí của phép nhân Karatsuba.</p>
+    <p>(b) 2ⁿ node. Nhưng hai lời gọi có cùng tham số nên cùng kết quả: gọi một lần, lưu vào biến, còn O(n). Giống cái bẫy của <code>power</code> ở trên, và là dấu hiệu đầu tiên của bài con trùng.</p>
+  </div></details>
 </section>
 
 <!-- ============ TUYẾN XANH: BÓC MỘT PHẦN TỬ ============ -->
@@ -516,6 +594,7 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
   </div>
   <p><strong>Cắt tỉa</strong> (pruning) làm quay lui nhanh lên rất nhiều: kiểm tra ràng buộc <em>trước</em> khi đi vào một nhánh, đừng đợi tới lá. Generate Parentheses (22) chỉ thêm <code>"("</code> khi số mở &lt; n và chỉ thêm <code>")"</code> khi số đóng &lt; số mở; nhờ vậy không bao giờ sinh ra chuỗi sai.</p>
   <div class="key"><strong>Một điểm Swift làm đúng thay bạn</strong><p>Trong Java hay Python, <code>result.append(path)</code> thêm một <em>tham chiếu</em>, và lần hoàn tác sau đó làm hỏng kết quả đã lưu. Mảng của Swift là kiểu giá trị (value type), nên <code>append(path)</code> lưu một bản sao. Khi đọc lời giải bằng ngôn ngữ khác, bạn sẽ thấy họ viết <code>new ArrayList&lt;&gt;(path)</code> hay <code>path[:]</code>: đó là lý do.</p></div>
+  <p>Bài <a href="https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8">Tư duy Quay lui</a> đi sâu vào mẫu này: cách chọn câu hỏi ở mỗi tầng, cắt tỉa, khử trùng và sáu mẫu bài. Nên đi qua ga <a href="#theo-lua-chon">Theo lựa chọn</a> trên tuyến tím trước khi sang bài đó.</p>
 </section>
 
 <!-- ============ TĂNG CƯỜNG HÀM ============ -->
@@ -573,10 +652,343 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
   </table></div>
 </section>
 
+<!-- ============ TUYẾN TÍM: HAI LUỒNG ============ -->
+<section class="st violet" id="hai-luong">
+  <p class="line-name">Tuyến nền móng · nối từ ga Kiểm tra, dẫn sang Quay lui và Quy hoạch động</p>
+  <h2>Hai luồng: thông tin đi xuống qua tham số, đi lên qua giá trị trả về</h2>
+  <p>Tuyến đỏ dạy bạn viết đúng <em>một</em> hàm đệ quy. Tuyến tím dạy bạn nhìn <em>cả cây lời gọi</em> mà hàm đó sinh ra, vì Quay lui và Quy hoạch động là hai cách khác nhau để đi trên cái cây ấy. Bắt đầu bằng câu hỏi bạn đã gặp ở ga <a href="#theo-cay">Theo cây</a>, giờ áp dụng cho mọi hàm: <strong>thông tin nào chảy xuống, thông tin nào chảy lên?</strong></p>
+  <div class="key"><strong>Bài ví dụ cho cả tuyến tím: Climbing Stairs (LeetCode 70)</strong><p>Cầu thang có n bậc. Mỗi lần bạn bước lên 1 hoặc 2 bậc. Có bao nhiêu cách đi từ bậc 0 lên đúng bậc n? Với n = 4 có 5 cách: 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, 2+2.</p></div>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 600 206" style="min-width:480px;max-width:640px" role="img" aria-label="Cầu thang 4 bậc và một cách đi: bước 1, bước 2, bước 1">
+      <defs><marker id="ahS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--blue)"/></marker></defs>
+      <g stroke-width="2" style="fill:var(--soft);stroke:var(--line)"><rect x="40" y="170" width="100" height="20"/><rect x="140" y="142" width="100" height="48"/><rect x="240" y="114" width="100" height="76"/><rect x="340" y="86" width="100" height="104"/><rect x="440" y="58" width="100" height="132"/></g>
+      <g font-size="13" text-anchor="middle" fill="currentColor"><text x="90" y="185">bậc 0</text><text x="190" y="185">bậc 1</text><text x="290" y="185">bậc 2</text><text x="390" y="185">bậc 3</text><text x="490" y="185">bậc 4</text></g>
+      <g fill="none" stroke-width="3" style="stroke:var(--blue)"><path d="M90 164 Q140 104 186 140" marker-end="url(#ahS)"/><path d="M190 136 Q290 22 386 82" marker-end="url(#ahS)"/><path d="M390 80 Q440 14 486 54" marker-end="url(#ahS)"/></g>
+      <g font-size="14" font-weight="800" text-anchor="middle" style="fill:var(--blue)"><text x="140" y="118">+1</text><text x="290" y="52">+2</text><text x="440" y="30">+1</text></g>
+      <text x="90" y="160" text-anchor="middle" font-size="12" fill="currentColor" opacity=".8">xuất phát</text>
+      <text x="490" y="48" text-anchor="middle" font-size="12" font-weight="700" style="fill:var(--green)">đích</text>
+    </svg></div>
+    <figcaption>Một trong 5 cách: 1 + 2 + 1. Mỗi bước là một lựa chọn; một cách đi là một dãy lựa chọn.</figcaption>
+  </figure>
+  <p>Có hai cách viết hàm đệ quy cho bài này. Chúng sinh ra <strong>cùng một cây lời gọi</strong>, nhưng thông tin chạy theo hai chiều ngược nhau:</p>
+  <figure>
+    <div class="svgbox"><svg viewBox="0 0 760 290" style="min-width:600px" role="img" aria-label="Bên trái: ways(1) nhận giá trị 2 và 1 trả lên từ hai con. Bên phải: walk(1) truyền path xuống hai con">
+      <defs><marker id="ahU" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--green)"/></marker><marker id="ahW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--red)"/></marker></defs>
+      <text x="20" y="24" font-size="15" font-weight="800" fill="currentColor">Trả lên: ways(i)</text>
+      <rect x="100" y="50" width="180" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <rect x="40" y="180" width="130" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/><rect x="210" y="180" width="130" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <g font-family="Roboto Mono,monospace" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor"><text x="190" y="75">ways(1) = 2 + 1</text><text x="105" y="205">ways(2) → 2</text><text x="275" y="205">ways(3) → 1</text></g>
+      <g fill="none" stroke-width="3" style="stroke:var(--green)"><path d="M105 176 L160 96" marker-end="url(#ahU)"/><path d="M275 176 L220 96" marker-end="url(#ahU)"/></g>
+      <g font-size="15" font-weight="800" style="fill:var(--green)"><text x="112" y="140">2</text><text x="258" y="140">1</text></g>
+      <g font-size="13" fill="currentColor"><text x="20" y="254">Mỗi lời gọi trả lời: từ bậc này còn bao nhiêu cách?</text><text x="20" y="274">Đáp án đi lên và được gộp lại ở gốc.</text></g>
+      <text x="400" y="24" font-size="15" font-weight="800" fill="currentColor">Mang theo: walk(i)</text>
+      <rect x="470" y="50" width="190" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <rect x="400" y="180" width="160" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/><rect x="580" y="180" width="160" height="40" rx="9" stroke-width="2" style="fill:var(--bg);stroke:var(--ink)"/>
+      <g font-family="Roboto Mono,monospace" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor"><text x="565" y="75">walk(1) path=[1]</text><text x="480" y="205">walk(2) [1,1]</text><text x="660" y="205">walk(3) [1,2]</text></g>
+      <g fill="none" stroke-width="3" style="stroke:var(--red)"><path d="M530 94 L486 174" marker-end="url(#ahW)"/><path d="M600 94 L652 174" marker-end="url(#ahW)"/></g>
+      <g font-size="15" font-weight="800" style="fill:var(--red)"><text x="476" y="140">+1</text><text x="640" y="140">+2</text></g>
+      <g font-size="13" fill="currentColor"><text x="400" y="254">Mỗi lời gọi nói: tôi đã tới đây bằng đường này.</text><text x="400" y="274">Đáp án nằm ở các lá: count += 1.</text></g>
+    </svg></div>
+  </figure>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Cách A · trả lên</p><pre><code>let n = 4
+// "từ bậc i, còn bao nhiêu cách lên tới n?"
+func ways(_ i: Int) -&gt; Int {
+    if i == n { return 1 }              // tới đích: một cách trọn vẹn
+    var total = 0
+    for s in [1, 2] where i + s &lt;= n {  // hai lựa chọn: bước 1 hoặc 2
+        total += ways(i + s)            // tin tưởng bài con
+    }
+    return total
+}</code></pre></div>
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Cách B · mang theo</p><pre><code>// "tôi đã tới bậc i bằng đường path"
+var count = 0, path: [Int] = []
+func walk(_ i: Int) {
+    if i == n { count += 1; print(path); return }
+    for s in [1, 2] where i + s &lt;= n {
+        path.append(s)                  // thông tin đi xuống
+        walk(i + s)
+        path.removeLast()               // hoàn tác
+    }
+}</code></pre></div>
+  </div>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>So sánh</th><th>Trả lên: <code>ways(i)</code></th><th>Mang theo: <code>walk(i)</code></th></tr></thead>
+    <tbody>
+      <tr><td>Hàm trả lời câu hỏi về</td><td>phần còn lại: từ đây tới đích</td><td>phần đã đi: từ gốc tới đây</td></tr>
+      <tr><td>Thông tin chính chảy</td><td>lên, qua giá trị trả về</td><td>xuống, qua tham số và biến dùng chung</td></tr>
+      <tr><td>Đáp án nằm ở</td><td>giá trị trả về của gốc</td><td>các lá, gom vào biến ngoài</td></tr>
+      <tr><td>Cùng tham số thì cùng kết quả?</td><td>có: <code>ways(2)</code> luôn bằng 2</td><td>không: <code>walk(2)</code> in ra đường khác nhau tuỳ <code>path</code></td></tr>
+      <tr><td>Nhớ lại kết quả được không?</td><td>được</td><td>không</td></tr>
+      <tr><td>Phải chạm vào từng lá?</td><td>chỉ khi chưa nhớ</td><td>luôn luôn</td></tr>
+      <tr><td>Dẫn tới</td><td>Quy hoạch động, chia để trị</td><td>Quay lui, liệt kê</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Quy tắc nền móng: câu hỏi về tương lai thì nhớ được, câu hỏi về quá khứ thì không</strong><p><code>ways(i)</code> chỉ phụ thuộc vào i: hai đường khác nhau cùng tới bậc 2 nhận cùng một câu trả lời. <code>walk(i)</code> phụ thuộc vào cả lịch sử <code>path</code>. Khi thiết kế trạng thái Quy hoạch động, bạn luôn viết hợp đồng dạng “<strong>từ đây trở đi</strong>…”. Khi đề bắt in ra từng cấu hình, bạn buộc phải mang <code>path</code> theo, và đó là Quay lui.</p></div>
+  <details class="try"><summary><b>Tự thử</b> Viết <code>maxDepth</code> của cây nhị phân theo kiểu mang theo. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <div class="codewrap" style="margin-top:0"><pre><code>func maxDepth(_ root: TreeNode?) -&gt; Int {
+    var best = 0
+    func walk(_ node: TreeNode?, _ depth: Int) {  // depth: độ dài đường đã đi
+        guard let node else { return }
+        best = max(best, depth + 1)
+        walk(node.left, depth + 1)
+        walk(node.right, depth + 1)
+    }
+    walk(root, 0)
+    return best
+}</code></pre></div>
+    <p>Cả hai kiểu đều O(n). Trên cây, không có hai đường nào gặp lại cùng một node, nên hai kiểu ngang nhau. Khác biệt chỉ lộ ra khi nhiều đường khác nhau dẫn tới cùng một bài con, như ở cầu thang.</p>
+  </div></details>
+</section>
+
+<!-- ============ THEO LỰA CHỌN ============ -->
+<section class="st violet x" id="theo-lua-chon">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang bài Quay lui</p>
+  <h2>Theo lựa chọn: một cây quyết định, bốn câu hỏi khác nhau</h2>
+  <p>Bước đệ quy của Climbing Stairs có một dạng chung cho mọi bài Quay lui và Quy hoạch động:</p>
+  <p class="ask">“Đứng ở trạng thái này, tôi có những lựa chọn nào, và mỗi lựa chọn đưa tôi tới bài con nào?”</p>
+  <p>Trả lời câu đó là vẽ được cây quyết định. Thứ phân biệt các bài là <strong>đề muốn gì từ tập các đường đi trên cây</strong>. Cùng một cây (n = 5), bấm qua bốn câu hỏi. Nhãn trong node là bậc đang đứng; số nhỏ bên cạnh là giá trị node đó trả lên.</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Câu hỏi của đề" id="lc-mode"><span class="tl">Đề hỏi</span><button type="button" data-m="list" aria-pressed="true">Liệt kê mọi đường</button><button type="button" data-m="count" aria-pressed="false">Có bao nhiêu đường</button><button type="button" data-m="best" aria-pressed="false">Đường rẻ nhất</button><button type="button" data-m="can" aria-pressed="false">Có đường nào không</button></div>
+    <div class="eq" id="lc-eq"></div>
+    <div class="svgbox" id="lc-tree"></div>
+    <div id="lc-reswrap"><p class="mini" style="margin-top:12px">các đường tìm được</p><div class="chips" id="lc-res"></div></div>
+    <p class="say" id="lc-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw ans"></i>tới đích</span><span><i class="sw dead"></i>ngõ cụt</span><span><i class="sw path"></i>đường được chọn</span><span><i class="sw ghost"></i>không bao giờ được gọi</span></div>
+  </div>
+  <div class="grid2">
+    <div class="codewrap"><p class="lbl">Liệt kê mọi đường → Quay lui</p><pre><code>func list(_ i: Int) {
+    if i == n { all.append(path); return }
+    for s in [1, 2] where i + s &lt;= n {
+        path.append(s); list(i + s); path.removeLast()
+    }
+}</code></pre></div>
+    <div class="codewrap"><p class="lbl">Đếm số đường</p><pre><code>func count(_ i: Int) -&gt; Int {
+    if i == n { return 1 }
+    var t = 0
+    for s in [1, 2] where i + s &lt;= n { t += count(i + s) }
+    return t
+}</code></pre></div>
+    <div class="codewrap"><p class="lbl">Đường rẻ nhất</p><pre><code>func best(_ i: Int) -&gt; Int {        // tổng phí nhỏ nhất từ bậc i lên n
+    if i == n { return 0 }
+    var b = Int.max
+    for s in [1, 2] where i + s &lt;= n {
+        b = min(b, cost[i + s] + best(i + s))
+    }
+    return b
+}</code></pre></div>
+    <div class="codewrap"><p class="lbl">Có đường nào không</p><pre><code>func can(_ i: Int) -&gt; Bool {        // lên n mà không giẫm bậc hỏng?
+    if broken.contains(i) { return false }
+    if i == n { return true }
+    for s in [1, 2] where i + s &lt;= n {
+        if can(i + s) { return true } // một đường là đủ
+    }
+    return false
+}</code></pre></div>
+  </div>
+  <p>Bốn hàm có cùng bộ xương: điểm dừng ở đích, vòng lặp qua các lựa chọn, lời gọi trên bài con. Chỉ khác <strong>cách gộp kết quả của các lựa chọn</strong>, và giá trị trả về ở hai loại lá:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Đề hỏi</th><th>Gộp các lựa chọn bằng</th><th>Ngõ cụt trả về</th><th>Đích trả về</th></tr></thead>
+    <tbody>
+      <tr><td>Liệt kê mọi cấu hình</td><td>không gộp: ghi <code>path</code> ở đích</td><td>không ghi gì</td><td>ghi <code>path</code></td></tr>
+      <tr><td>Đếm số cách</td><td>cộng</td><td>0</td><td>1</td></tr>
+      <tr><td>Nhỏ nhất</td><td>min(phí bước + bài con)</td><td>+∞ (không có đường)</td><td>0</td></tr>
+      <tr><td>Lớn nhất</td><td>max(lợi bước + bài con)</td><td>−∞</td><td>0</td></tr>
+      <tr><td>Có tồn tại không</td><td>hoặc, dừng ngay khi gặp true</td><td>false</td><td>true</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Ngõ cụt trả về phần tử trung hoà của phép gộp</strong><p>Phần tử trung hoà là giá trị không làm thay đổi kết quả khi gộp vào: cộng thêm 0, lấy min với +∞, “hoặc” với false. Trả nhầm 0 cho ngõ cụt trong bài min sẽ biến “không có đường” thành “đường miễn phí”. Trong Swift, nếu dùng <code>Int.max</code> làm +∞ thì phải kiểm tra trước khi cộng (<code>Int.max + 1</code> làm chương trình dừng vì tràn số), hoặc trả về <code>Int?</code> với <code>nil</code> nghĩa là không có đường.</p></div>
+  <div class="key"><strong>Ngã rẽ của chuỗi bài</strong><p><strong>Liệt kê</strong> thì phải chạm vào từng lá. Số đáp án có thể là hàm mũ, và không thuật toán nào in nhanh hơn số dòng nó phải in. Đó là đất của <a href="https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8">Quay lui</a>, nơi kỹ năng chính là cắt bớt nhánh chết. Ba câu hỏi còn lại chỉ cần <strong>một con số ở mỗi node</strong>. Nếu nhiều node có cùng tham số, con số đó tính một lần là đủ: đó là <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a>, nơi kỹ năng chính là chọn tham số. Hai ga tiếp theo đi theo nhánh thứ hai.</p></div>
+  <details class="try"><summary><b>Tự thử</b> Coin Change (322): <code>coins = [1, 2, 5]</code>, <code>amount = 11</code>, tìm số đồng ít nhất. Điền: tham số, các lựa chọn, đích, ngõ cụt, phép gộp. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p><strong>Hợp đồng:</strong> <code>f(remain)</code> = số đồng ít nhất để tạo đúng <code>remain</code>. <strong>Lựa chọn:</strong> một đồng <code>c ≤ remain</code>, dẫn tới <code>f(remain − c)</code>. <strong>Đích:</strong> <code>remain == 0</code> → 0. <strong>Ngõ cụt:</strong> không đồng nào vừa → +∞ (hoặc <code>nil</code>). <strong>Gộp:</strong> <code>min(1 + f(remain − c))</code>.</p>
+    <p><code>f(11) = 3</code> (5 + 5 + 1). Nếu <code>f(amount)</code> là +∞ thì đề yêu cầu trả −1. Để ý: 11 − 5 − 1 và 11 − 1 − 5 cùng dẫn tới <code>f(5)</code>. Bài con trùng, nên đây là bài Quy hoạch động.</p>
+  </div></details>
+</section>
+
+<!-- ============ BÀI CON TRÙNG ============ -->
+<section class="st violet" id="bai-con-trung">
+  <h2>Bài con trùng: cây hỏi lại cùng một câu nhiều lần, hàm thuần cho phép nhớ câu trả lời</h2>
+  <p>Đếm xem <code>ways(i)</code> được gọi bao nhiêu lần trong cây của <code>ways(0)</code>. Đổi n, rồi bật “Có memo” để thấy cây co lại:</p>
+  <div class="panel">
+    <div class="tog" role="group" aria-label="Số bậc" id="on-n"><span class="tl">n</span><button type="button" data-m="5" aria-pressed="false">5 bậc</button><button type="button" data-m="6" aria-pressed="true">6 bậc</button><button type="button" data-m="7" aria-pressed="false">7 bậc</button></div>
+    <div class="tog" role="group" aria-label="Ghi nhớ" id="on-memo"><span class="tl">Cách gọi</span><button type="button" data-m="off" aria-pressed="true">Không nhớ</button><button type="button" data-m="on" aria-pressed="false">Có memo</button></div>
+    <div class="stats" id="on-stat"></div>
+    <div class="svgbox" id="on-tree"></div>
+    <p class="mini" style="margin-top:14px">Số lần mỗi câu hỏi được gọi</p>
+    <div class="bars" id="on-bars"></div>
+    <p class="say" id="on-say" aria-live="polite"></p>
+    <div class="legend"><span><i class="sw dup"></i>câu hỏi đã từng được hỏi</span><span><i class="sw memo"></i>lấy ngay từ memo</span><span><i class="sw ghost"></i>không còn được gọi</span><span><i class="sw ans"></i>tới đích</span></div>
+  </div>
+  <p>Số lần <code>ways(i)</code> bị gọi chính là dãy Fibonacci, nên cây không nhớ có khoảng 1,618ⁿ node. Với n = 40 là hơn 300 triệu lời gọi, cho một bài chỉ có 41 câu hỏi khác nhau. Memo sửa việc đó bằng ba dòng:</p>
+  <div class="codewrap"><pre><code>var memo: [Int: Int] = [:]
+func ways(_ i: Int) -&gt; Int {
+    if i == n { return 1 }
+    if let v = memo[i] { return v }        // đã hỏi rồi: trả ngay
+    var total = 0
+    for s in [1, 2] where i + s &lt;= n { total += ways(i + s) }
+    memo[i] = total                        // ghi lại trước khi trả về
+    return total
+}</code></pre></div>
+  <h3>Memo chỉ đúng với hàm thuần</h3>
+  <p>Memo dựa trên một giả định: <strong>cùng tham số thì cùng kết quả</strong>. Hàm có tính chất này gọi là hàm thuần (pure function): kết quả chỉ phụ thuộc vào tham số, không đọc biến ngoài nào thay đổi theo đường đi. Xem biến thể <em>đếm số cách lên n bậc bằng đúng k bước</em>:</p>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Sai: số bước còn lại nằm ngoài tham số</p><pre><code>var left = k                         // biến ngoài, đổi theo đường đi
+func count(_ i: Int) -&gt; Int {
+    if i == n { return left == 0 ? 1 : 0 }
+    if let v = memo[i] { return v }    // khoá chỉ có i
+    var t = 0
+    for s in [1, 2] where i + s &lt;= n &amp;&amp; left &gt; 0 {
+        left -= 1; t += count(i + s); left += 1
+    }
+    memo[i] = t                        // đúng cho MỘT giá trị left
+    return t
+}</code></pre></div>
+    <div class="codewrap" style="margin-top:0"><p class="lbl">Đúng: mọi thứ thay đổi đều là tham số</p><pre><code>struct Key: Hashable { let i: Int, left: Int }
+var memo: [Key: Int] = [:]
+func count(_ i: Int, _ left: Int) -&gt; Int {
+    if i == n { return left == 0 ? 1 : 0 }
+    if left == 0 { return 0 }
+    let key = Key(i: i, left: left)    // khoá gồm cả hai tham số
+    if let v = memo[key] { return v }
+    var t = 0
+    for s in [1, 2] where i + s &lt;= n { t += count(i + s, left - 1) }
+    memo[key] = t
+    return t
+}</code></pre></div>
+  </div>
+  <p>Bản sai tính <code>count(2)</code> khi <code>left</code> đang là một giá trị nào đó, ghi vào memo, rồi trả đúng con số ấy cho mọi lần gọi sau, dù lúc đó <code>left</code> đã khác. Không có lỗi biên dịch nào báo cho bạn. Ba câu hỏi trước khi thêm memo:</p>
+  <ul class="sig" style="--c:var(--violet)">
+    <li><strong>Kết quả có chỉ phụ thuộc vào tham số không?</strong> Biến ngoài nào thay đổi theo đường đi phải chuyển vào tham số.</li>
+    <li><strong>Khoá memo có chứa mọi tham số thay đổi không?</strong> Tham số không đổi suốt bài (n, mảng input) không cần vào khoá.</li>
+    <li><strong>Số bộ tham số khác nhau có nhỏ không?</strong> Đó là kích thước bảng memo, và là số bài con thật sự phải giải.</li>
+  </ul>
+  <div class="key"><strong>Phép thử node trùng: có hai dãy lựa chọn khác nhau nào dẫn tới cùng một phần còn lại không?</strong><p>Cầu thang: 1+1 và 2 cùng tới bậc 2, nên có. Merge sort: hai nửa rời nhau và không bao giờ gặp lại, nên không. Hoán vị của [1, 2, 3]: chọn 1 rồi 2, hay 2 rồi 1, đều còn lại {3}. Nếu đề <em>liệt kê</em> hoán vị thì <code>path</code> khác nhau nên không dùng lại được gì. Nếu đề chỉ <em>đếm</em> hoặc tìm thứ tự rẻ nhất thì “tập đã dùng” là đủ, và bài thành Quy hoạch động trên bitmask. <strong>Trùng hay không phụ thuộc vào câu hỏi của đề, không chỉ vào cái cây.</strong></p></div>
+  <details class="try"><summary><b>Tự thử</b> Bài nào có bài con trùng có ích? (a) Merge sort. (b) Đếm đường đi trên lưới m×n, chỉ đi sang phải hoặc xuống (62). (c) Liệt kê mọi tập con. (d) Số đồng xu ít nhất (322). <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p>(b) và (d). Nhiều đường khác nhau tới cùng một ô, hoặc cùng một số tiền còn lại, và đề chỉ hỏi một con số. (a) không: các đoạn con rời nhau. (c) có những phần còn lại giống nhau, nhưng đề đòi in từng tập, nên nhớ lại không bớt được việc in.</p>
+  </div></details>
+</section>
+
+<!-- ============ KHÔNG GIAN TRẠNG THÁI ============ -->
+<section class="st violet x" id="khong-gian">
+  <p class="line-name" style="color:var(--ink)">Ga đổi tuyến · rẽ sang bài Quy hoạch động</p>
+  <h2>Không gian trạng thái: gộp các node cùng tham số, cây thành một đồ thị nhỏ</h2>
+  <p>Bật memo ở ga trước là bạn đã ngầm làm việc này: mỗi bộ tham số chỉ được giải một lần. Giờ vẽ nó ra: mỗi bộ tham số thành <strong>đúng một</strong> node, nối một cạnh từ bài lớn tới mỗi bài con nó cần. Cây 20 node của <code>ways(0)</code> với n = 5 co lại còn 6 node:</p>
+  <figure>
+    <div class="frtwo">
+      <div><p class="mini">Cây lời gọi: 20 node</p><div class="svgbox" id="kg-tree"></div></div>
+      <div><p class="mini">Đồ thị bài con: 6 node</p><div class="svgbox" id="kg-dag"></div></div>
+    </div>
+    <figcaption>Ba node xanh bên trái đều là <code>ways(3)</code>; bên phải chúng là một node. Mũi tên đọc là “cần đáp án của”: <code>ways(1)</code> cần <code>ways(2)</code> và <code>ways(3)</code>.</figcaption>
+  </figure>
+  <p>Đồ thị này không bao giờ có chu trình, vì thước đo ở ga <a href="#diem-dung">Điểm dừng</a> luôn giảm dọc theo mỗi cạnh. Nó được gọi là <strong>DAG</strong> (đồ thị có hướng không chu trình), và là bức tranh đúng nhất của một bài Quy hoạch động. Chi phí đọc thẳng từ DAG:</p>
+  <div class="eq">Thời gian = số trạng thái × số lựa chọn mỗi trạng thái × việc mỗi lựa chọn<br>ways có memo: (n + 1) × 2 × O(1) = <b>O(n)</b><br>Bộ nhớ    = bảng memo (số trạng thái) + stack (độ sâu)</div>
+  <h3>Chọn tham số là chọn hình dạng DAG</h3>
+  <p>Mỗi kiểu tham số mô tả “phần còn lại” theo một cách. Đây là bảng bạn sẽ dùng nhiều nhất trong bài Quy hoạch động:</p>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>Tham số</th><th>“Phần còn lại” là</th><th>Số trạng thái</th><th>Bài ví dụ</th></tr></thead>
+    <tbody>
+      <tr><td><code>i</code></td><td>hậu tố <code>a[i...]</code> (hoặc tiền tố)</td><td>n</td><td>70, 198, 300, 139</td></tr>
+      <tr><td><code>(r, c)</code></td><td>đường từ ô (r, c) tới đích</td><td>m · n</td><td>62, 64, 221</td></tr>
+      <tr><td><code>(i, j)</code> trên hai chuỗi</td><td>hậu tố của cả hai chuỗi</td><td>m · n</td><td>1143, 72, 97</td></tr>
+      <tr><td><code>(lo, hi)</code></td><td>đoạn con <code>a[lo...hi]</code></td><td>n²</td><td>516, 312, 1039</td></tr>
+      <tr><td><code>(i, còn lại)</code></td><td>các món từ i trở đi, với sức chứa còn lại</td><td>n · C</td><td>416, 518, 494</td></tr>
+      <tr><td>node của cây</td><td>cây con gốc node</td><td>n</td><td>337, 124</td></tr>
+      <tr><td><code>mask</code></td><td>tập phần tử chưa dùng</td><td>2ⁿ</td><td>698, 847, 1879</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Trạng thái tốt: hợp đồng về phần còn lại, bằng ít số nguyên nhất</strong><p>Mỗi số nguyên thêm vào tham số nhân số trạng thái lên. Câu hỏi để rút gọn: “để trả lời phần còn lại, tôi cần biết gì về quá khứ?”. Climbing Stairs không cần biết đã bước thế nào, chỉ cần biết đang ở bậc mấy. Biến thể “đúng k bước” cần thêm số bước còn lại, nên có (n + 1)·(k + 1) trạng thái. Đây chính là ga Trạng thái và ga Công thức của bài <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a>.</p></div>
+  <details class="try"><summary><b>Tự thử</b> House Robber (198): <code>nums = [2, 7, 9, 3, 1]</code>, không được lấy hai nhà liền kề, lấy được nhiều nhất bao nhiêu? Viết hợp đồng, lựa chọn, số trạng thái, chi phí. <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <p><code>rob(i)</code> = số tiền lớn nhất lấy được từ các nhà i…n−1. Hai lựa chọn: bỏ nhà i → <code>rob(i + 1)</code>; lấy nhà i → <code>nums[i] + rob(i + 2)</code>. Đích: <code>i ≥ n</code> → 0. Gộp: max. Có n + 2 trạng thái, 2 lựa chọn mỗi trạng thái: O(n).</p>
+    <p><code>rob(0) = 12</code> (2 + 9 + 1). Để ý cách lập luận giống hệt cầu thang: “lấy” nhảy 2 bậc, “bỏ” nhảy 1 bậc.</p>
+  </div></details>
+</section>
+
+<!-- ============ KHỬ ĐỆ QUY ============ -->
+<section class="st violet" id="khu-de-quy">
+  <h2>Khử đệ quy: tự chỉ ra thứ tự tính, hoặc tự cầm lấy stack</h2>
+  <p>Đệ quy có memo tự tìm ra thứ tự: nó đi xuống tới bài nhỏ nhất rồi điền dần lên. Khi đã thấy DAG, bạn có thể tự điền theo thứ tự đó bằng một vòng lặp, không cần call stack. Quy tắc duy nhất: <strong>một ô chỉ được tính sau mọi ô nó cần</strong>. Ô <code>i</code> cần ô <code>i + 1</code> và <code>i + 2</code>, nên điền từ phải sang trái:</p>
+  <div class="panel">
+    <div class="svgbox" id="bu-svg"></div>
+    <p class="say" id="bu-say" aria-live="polite"></p>
+    <div class="ctl" id="bu-ctl"></div>
+  </div>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func climbStairs(_ n: Int) -&gt; Int {
+    var dp = [Int](repeating: 0, count: n + 2)  // dp[n + 1] = 0: bước quá đích
+    dp[n] = 1                                    // điểm dừng → giá trị khởi đầu
+    for i in stride(from: n - 1, through: 0, by: -1) {  // bài gần đích trước
+        dp[i] = dp[i + 1] + dp[i + 2]            // bước đệ quy → công thức
+    }
+    return dp[0]
+}</code></pre></div>
+    <div class="scroll"><table class="tbl">
+      <thead><tr><th>Trong hàm đệ quy</th><th>Trong vòng lặp</th></tr></thead>
+      <tbody>
+        <tr><td>tham số <code>i</code></td><td>chỉ số ô <code>dp[i]</code></td></tr>
+        <tr><td>điểm dừng <code>i == n → 1</code></td><td>giá trị khởi đầu <code>dp[n] = 1</code></td></tr>
+        <tr><td>lời gọi <code>ways(i + s)</code></td><td>đọc ô đã điền <code>dp[i + s]</code></td></tr>
+        <tr><td>thước đo giảm (n − i)</td><td>thứ tự vòng lặp: bài nhỏ trước</td></tr>
+        <tr><td>giá trị trả về của gốc</td><td>ô điền sau cùng <code>dp[0]</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p>Mỗi ô chỉ cần hai ô ngay sau nó, nên hai biến là đủ. Bộ nhớ giảm từ O(n) xuống O(1), điều mà bản đệ quy không làm được:</p>
+  <div class="codewrap"><pre><code>func climbStairs(_ n: Int) -&gt; Int {
+    var a = 1, b = 0                 // a = dp[i + 1], b = dp[i + 2]
+    for _ in 0..&lt;n { (a, b) = (a + b, a) }
+    return a
+}</code></pre></div>
+  <h3>Khi không có bài con trùng: tự quản lý stack</h3>
+  <p>Duyệt một cây lệch sâu hàng trăm nghìn tầng không cần memo, nhưng vẫn có thể tràn stack. Lúc đó, thay call stack bằng một mảng do bạn quản lý: mỗi phần tử là một lời gọi đang chờ.</p>
+  <div class="two">
+    <div class="codewrap" style="margin-top:0"><pre><code>func sumTree(_ root: TreeNode?) -&gt; Int {
+    var stack: [TreeNode] = [], total = 0
+    if let root { stack.append(root) }
+    while let node = stack.popLast() {      // đỉnh stack = lời gọi đang chạy
+        total += node.val
+        if let r = node.right { stack.append(r) }
+        if let l = node.left { stack.append(l) }  // đẩy sau để chạy trước
+    }
+    return total
+}</code></pre></div>
+    <div><p>Cách này dễ khi việc của node làm ở <strong>chiều đi xuống</strong> (cộng giá trị, in theo tiền thứ tự). Khi node cần kết quả của các con trước (chiều cao, hậu thứ tự), mỗi phần tử trên stack phải nhớ thêm “đã thăm con chưa”: đó chính là phần việc cỗ máy đệ quy vẫn làm hộ bạn. Bottom-up trên DAG tránh được chuyện này vì thứ tự đã biết trước.</p></div>
+  </div>
+  <h3>Đệ quy đuôi là vòng lặp trá hình</h3>
+  <p>Một lời gọi đệ quy là <strong>lời gọi đuôi</strong> nếu nó là việc cuối cùng hàm làm: sau khi nó trả về, không còn gì để kết hợp. Mỗi lần gọi khi đó chỉ là thay tham số, tức một vòng lặp. Swift không cam kết tự tối ưu lời gọi đuôi, nên khi độ sâu có thể lớn, tự viết thành vòng lặp:</p>
+  <div class="codewrap"><pre><code>func gcd(_ a: Int, _ b: Int) -&gt; Int { b == 0 ? a : gcd(b, a % b) }  // lời gọi đuôi
+
+func gcdLoop(_ a: Int, _ b: Int) -&gt; Int {
+    var a = a, b = b
+    while b != 0 { (a, b) = (b, a % b) }   // cùng phép thay tham số, không có stack
+    return a
+}</code></pre></div>
+  <div class="scroll"><table class="tbl stack">
+    <thead><tr><th>So sánh</th><th>Đệ quy + memo (top-down)</th><th>Vòng lặp (bottom-up)</th></tr></thead>
+    <tbody>
+      <tr><td>Viết từ</td><td>hàm đệ quy, thêm ba dòng memo</td><td>DAG: phải biết thứ tự phụ thuộc</td></tr>
+      <tr><td>Giải những trạng thái</td><td>chỉ những trạng thái thật sự được hỏi tới</td><td>mọi ô trong bảng</td></tr>
+      <tr><td>Rủi ro chính</td><td>tràn stack khi độ sâu lớn</td><td>điền sai thứ tự, đọc ô chưa tính</td></tr>
+      <tr><td>Tối ưu bộ nhớ</td><td>khó</td><td>dễ: chỉ giữ các ô còn cần</td></tr>
+    </tbody>
+  </table></div>
+  <div class="key"><strong>Cùng một DAG, hai thứ tự đi</strong><p>Top-down và bottom-up không phải hai thuật toán khác nhau. Chúng là cùng một DAG và cùng một công thức; chỉ khác ở chỗ ai quyết định thứ tự. Luôn viết bản đệ quy trước để chắc công thức đúng, rồi mới dịch sang vòng lặp theo bảng đối chiếu ở trên.</p></div>
+  <details class="try"><summary><b>Tự thử</b> Dịch <code>rob(i)</code> của House Robber sang vòng lặp: mảng cỡ bao nhiêu, giá trị khởi đầu, thứ tự điền? <em>Bấm để xem đáp án</em></summary><div class="ans">
+    <div class="codewrap" style="margin-top:0"><pre><code>func rob(_ nums: [Int]) -&gt; Int {
+    let n = nums.count
+    var dp = [Int](repeating: 0, count: n + 2)   // dp[n] = dp[n + 1] = 0
+    for i in stride(from: n - 1, through: 0, by: -1) {
+        dp[i] = max(dp[i + 1], nums[i] + dp[i + 2])
+    }
+    return dp[0]
+}</code></pre></div>
+    <p>Ô i cần i + 1 và i + 2, nên điền từ phải sang trái, giống hệt cầu thang. Hai biến là đủ để thay mảng.</p>
+  </div></details>
+</section>
+
 <!-- ============ KHI BỊ KẸT ============ -->
 <section class="st green x" id="bi-ket">
   <p class="line-name">Tuyến luyện tập</p>
-  <h2>Khi bị kẹt: bảy lỗi gây ra hầu hết hàm đệ quy sai</h2>
+  <h2>Khi bị kẹt: mười lỗi gây ra hầu hết hàm đệ quy sai</h2>
   <div class="scroll"><table class="tbl stack">
     <thead><tr><th>Lỗi</th><th>Biểu hiện</th><th>Cách sửa</th></tr></thead>
     <tbody>
@@ -586,7 +998,10 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
       <tr><td>Không thu nhỏ</td><td>Gọi lại với cùng input, đệ quy vô hạn</td><td>Chỉ ra thước đo giảm thật sự ở mọi lời gọi</td></tr>
       <tr><td>Quên hoàn tác</td><td>Quay lui sinh kết quả lẫn nhau, thừa phần tử</td><td>Mỗi <code>append</code> trước lời gọi đi kèm một <code>removeLast</code> sau lời gọi</td></tr>
       <tr><td>Dùng biến ngoài thay cho tham số</td><td>Kết quả phụ thuộc thứ tự gọi, khó gỡ lỗi</td><td>Thông tin từ cha: tham số; thông tin cho cha: giá trị trả về</td></tr>
-      <tr><td>Giải lại bài con</td><td>Đúng nhưng chậm theo hàm mũ</td><td>Vẽ cây đệ quy; node trùng thì thêm memo (sang DP)</td></tr>
+      <tr><td>Giải lại bài con</td><td>Đúng nhưng chậm theo hàm mũ</td><td>Vẽ cây đệ quy; node trùng thì thêm memo (ga <a href="#bai-con-trung">Bài con trùng</a>)</td></tr>
+      <tr><td>Memo trên hàm không thuần</td><td>Thêm memo thì sai, bỏ memo thì đúng</td><td>Chuyển mọi biến ngoài đổi theo đường đi vào tham số</td></tr>
+      <tr><td>Khoá memo thiếu tham số</td><td>Đúng với input nhỏ, sai với input lớn hơn</td><td>Khoá phải gồm mọi tham số thay đổi giữa các lời gọi</td></tr>
+      <tr><td>Ngõ cụt trả sai giá trị</td><td>Bài min ra 0, bài đếm ra thừa</td><td>Ngõ cụt trả phần tử trung hoà của phép gộp: 0 cho cộng, +∞ cho min, false cho “hoặc”</td></tr>
     </tbody>
   </table></div>
   <div class="key"><strong>Cách gỡ lỗi chắc chắn nhất</strong><p>In ra mỗi lần vào và ra khỏi hàm, thụt lề theo độ sâu: <code>print(String(repeating: "  ", count: depth), "sum", a, "→", result)</code>. Chạy với input nhỏ nhất làm hỏng. Khung đầu tiên trả về sai giá trị so với hợp đồng là nơi có lỗi: lỗi ở điểm dừng nếu đó là khung sâu nhất, ở bước kết hợp nếu không phải.</p></div>
@@ -599,12 +1014,14 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
     <li><strong>Chặng 2 · Theo cây</strong>Mục tiêu: quyết định được tham số và giá trị trả về trước khi code.<div class="pb"><span>104 Maximum Depth</span><span>226 Invert Binary Tree</span><span>112 Path Sum</span><span>543 Diameter</span><span>236 Lowest Common Ancestor</span><span>98 Validate BST</span></div></li>
     <li><strong>Chặng 3 · Chia để trị</strong>Mục tiêu: thấy được công việc nằm ở chiều đi xuống hay chiều đi lên.<div class="pb"><span>912 Sort an Array</span><span>148 Sort List</span><span>108 Sorted Array to BST</span><span>105 Construct from Preorder and Inorder</span></div></li>
     <li><strong>Chặng 4 · Quay lui</strong>Mục tiêu: vẽ cây quyết định trên giấy, tìm chỗ cắt tỉa.<div class="pb"><span>78 Subsets</span><span>46 Permutations</span><span>39 Combination Sum</span><span>22 Generate Parentheses</span><span>79 Word Search</span><span>51 N-Queens</span></div></li>
+    <li><strong>Chặng 5 · Nền móng cho Quy hoạch động</strong>Mục tiêu: mỗi bài viết ba lần: đệ quy trả lên, thêm memo, rồi vòng lặp bottom-up. So số lời gọi của ba bản.<div class="pb"><span>509 Fibonacci Number</span><span>70 Climbing Stairs</span><span>746 Min Cost Climbing Stairs</span><span>198 House Robber</span><span>62 Unique Paths</span><span>322 Coin Change</span></div></li>
   </ol>
-  <p>Sau khi xong chặng 4, chuyển sang <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Quy hoạch động</a>: bạn sẽ thấy mỗi lời giải DP bắt đầu bằng đúng một hàm đệ quy như ở đây, chỉ thêm một bảng nhớ.</p>
+  <p>Sau chặng 4, sang <a href="https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8">Tư duy Quay lui</a>. Sau chặng 5, sang <a href="https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi">Tư duy Quy hoạch động</a>: bạn sẽ thấy mỗi lời giải DP bắt đầu bằng đúng một hàm đệ quy trả lên như ở đây, thêm một bảng nhớ, rồi được dịch sang vòng lặp.</p>
 </section>
 
 <section class="st green last" id="mau">
-  <h2>Mẫu suy luận: điền sáu dòng này trước khi viết code</h2>
+  <h2>Mẫu suy luận: điền tám dòng này trước khi viết code</h2>
+  <p>Sáu dòng đầu là tuyến đỏ: viết đúng một hàm. Hai dòng cuối là tuyến tím: quyết định hàm đó sẽ thành lời giải quay lui, quy hoạch động, hay giữ nguyên.</p>
   <div class="two">
     <div class="codewrap" style="margin-top:0"><p class="lbl">Mẫu trống</p><pre class="plain"><code>Bài: ...
 1. Hợp đồng   : func f(...) -&gt; ...
@@ -615,7 +1032,13 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
 5. Điểm dừng  : khi ..., trả về ...
                 thước đo giảm: ...
 6. Kiểm tra   : chạy tay input nhỏ nhất và nhỏ nhì
-                cây: ... node, sâu ...; có node trùng? → memo</code></pre></div>
+                cây: ... node, sâu ...; T(n) = ...
+7. Luồng      : trả lên (hỏi về phần còn lại)
+                hay mang theo (path)?
+8. Node trùng : hai đường khác nhau tới cùng tham số?
+                đề liệt kê → quay lui
+                đề đếm / min / có-không, hàm thuần
+                → memo → bottom-up</code></pre></div>
     <div class="codewrap" style="margin-top:0"><p class="lbl">Đã điền cho Tháp Hà Nội</p><pre class="plain"><code>Bài: Tháp Hà Nội
 1. Hợp đồng   : hanoi(n, from, to, via)
                 "chuyển n đĩa trên cùng from → to,
@@ -625,13 +1048,28 @@ func diameterOfBinaryTree(_ root: TreeNode?) -&gt; Int {            // trả lê
 4. Kết hợp    : dời khối đi, chuyển đĩa n, dời khối về
 5. Điểm dừng  : n == 0 thì không làm gì; thước đo: n
 6. Kiểm tra   : n=0: không chuyển; n=1: đúng 1 lần chuyển
-                cây 2ⁿ−1 node, sâu n; không có node trùng</code></pre></div>
+                cây 2ⁿ−1 node, sâu n; T(n) = 2T(n−1) + 1
+7. Luồng      : làm việc, không trả gì; thứ tự in là đáp án
+8. Node trùng : có bộ tham số lặp lại, nhưng đề cần in
+                mọi bước (2ⁿ − 1 dòng): nhớ lại không
+                làm bớt việc → giữ nguyên đệ quy</code></pre></div>
   </div>
-  <p>Dòng nào không điền được, đó là ga cần quay lại. Thường nhất là dòng 1: hợp đồng chưa đủ tổng quát để dòng 2 tìm được bài con.</p>
+  <div class="codewrap"><p class="lbl">Đã điền cho Climbing Stairs</p><pre class="plain"><code>Bài: Climbing Stairs (70)
+1. Hợp đồng   : ways(i) -&gt; Int
+                "số cách đi từ bậc i lên đúng bậc n"
+2. Thu nhỏ    : ways(i + 1), ways(i + 2)
+3. Tin tưởng  : hai lời gọi trả đúng số cách từ hai bậc đó
+4. Kết hợp    : cộng: mỗi cách bắt đầu bằng bước 1 hoặc bước 2
+5. Điểm dừng  : i == n → 1; chỉ bước khi i + s ≤ n; thước đo: n − i
+6. Kiểm tra   : n=1 → 1; n=2 → 2; không memo: ~1,618ⁿ node
+7. Luồng      : trả lên: câu hỏi nói về phần còn lại
+8. Node trùng : có (1+1 và 2 cùng tới bậc 2); hàm thuần
+                → memo O(n) → dp từ n xuống 0 → hai biến, O(1) bộ nhớ</code></pre></div>
+  <p>Dòng nào không điền được, đó là ga cần quay lại. Thường nhất là dòng 1: hợp đồng chưa đủ tổng quát để dòng 2 tìm được bài con. Dòng 7 sai thường làm dòng 8 vô nghĩa: hàm mang theo <code>path</code> thì không bao giờ memo được.</p>
 </section>
 
 </main>
-<footer><div class="wrap">Tài liệu học đệ quy · đi cùng “Tư duy Quy hoạch động” và “Tư duy Tham lam” · ví dụ code bằng Swift · bài tập đánh số theo LeetCode.</div></footer>
+<footer><div class="wrap">Tài liệu nền móng của chuỗi · đọc trước “Tư duy Quay lui” và “Tư duy Quy hoạch động”, cùng “Tư duy Tham lam” · ví dụ code bằng Swift · bài tập đánh số theo LeetCode.</div></footer>
 
 <script>
 {
@@ -641,7 +1079,7 @@ const $=id=>document.getElementById(id);
 for(const tb of document.querySelectorAll('table.stack')){const hs=[...tb.querySelectorAll('thead th')].map(h=>h.textContent.trim());for(const tr of tb.querySelectorAll('tbody tr'))[...tr.children].forEach((td,i)=>{td.dataset.l=hs[i]||''})}
 
 /* code: copy + highlight */
-const KW=/\b(func|let|var|for|in|if|else|return|guard|where|while|final|class|init)\b/g;
+const KW=/\b(func|let|var|for|in|if|else|return|guard|where|while|final|class|init|struct|break|continue|true|false)\b/g;
 for(const pre of document.querySelectorAll('.codewrap pre')){
   const code=pre.querySelector('code');
   if(!pre.classList.contains('plain')){code.innerHTML=code.innerHTML.split('\n').map(line=>{const k=line.indexOf('//');const a=k<0?line:line.slice(0,k);const b=k<0?'':line.slice(k);return a.replace(KW,'<span class="kw">$1</span>')+(b?'<span class="cm">'+b+'</span>':'')}).join('\n')}
@@ -668,28 +1106,39 @@ function stepper(ctlEl,N,paint,opts){
 /* ---------- metro map ---------- */
 const ST=[['hop-dong','Hợp đồng','hàm hứa trả về gì?'],['thu-nho','Thu nhỏ','bài con cùng dạng'],['tin-tuong','Tin tưởng','không lần theo'],['ket-hop','Kết hợp','dựng đáp án'],['diem-dung','Điểm dừng','bài nhỏ nhất'],['kiem-tra','Kiểm tra','chạy tay, đo chi phí']];
 const PT=[['boc-mot','Bóc một phần tử','Reverse List'],['chia-doi','Chia đôi','Merge Sort'],['theo-cay','Theo cây','Tree DFS'],['quay-lui','Quay lui','Subsets'],['tang-cuong','Tăng cường hàm','Validate BST']];
+const VT=[['hai-luong','Hai luồng','xuống và lên'],['theo-lua-chon','Theo lựa chọn','một cây, bốn câu hỏi'],['bai-con-trung','Bài con trùng','gọi lại bài cũ'],['khong-gian','Không gian','cây gộp thành DAG'],['khu-de-quy','Khử đệ quy','vòng lặp, stack']];
+const QL='https://claude.ai/artifact/RxpqTvusLjNCiNbPDL34t8',QH='https://claude.ai/artifact/6jMkuKWiji8CpAP2FeK4Fi';
+function term(x,y,href,name,hint,anchor,lx,ly){return `<a href="${href}" target="_blank" rel="noopener" aria-label="${name} (mở bài khác)"><circle cx="${x}" cy="${y}" r="12" style="fill:var(--bg);stroke:var(--ink)" stroke-width="5"/><text x="${lx}" y="${ly}" text-anchor="${anchor}" font-weight="800" font-size="15" fill="currentColor">${name} ↗</text><text x="${lx}" y="${ly+19}" text-anchor="${anchor}" font-size="13" fill="currentColor" opacity=".72">${hint}</text></a>`}
 const map=$('map');const wideMQ=window.matchMedia('(min-width:1040px)');
 function stn(x,y,col,id,name,hint,anchor,lx,ly,big){const r=big?14:10;const sc=big?'var(--ink)':col;
   return `<g class="stn" data-to="${id}" tabindex="0" role="link" aria-label="${name}"><circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--bg);stroke:${sc}" stroke-width="5"/><text x="${lx}" y="${ly}" text-anchor="${anchor}" font-weight="800" font-size="15" fill="currentColor">${name}</text><text x="${lx}" y="${ly+19}" text-anchor="${anchor}" font-size="13" fill="currentColor" opacity=".72">${hint}</text></g>`}
 function drawMap(){
   const W=map.clientWidth,H=map.clientHeight;if(!W)return;let o='';
   if(wideMQ.matches&&W>=900){
-    const m=70,s=(W-2*m)/5,yT=48,yR=170,yB=H-110,e=30;
-    const xs=ST.map((_,i)=>m+i*s),x1=xs[1],x3=xs[3],x5=xs[5];
-    const b0=x1+e,span=W-m-b0,bxs=PT.map((_,k)=>b0+span*(k+.6)/5);
-    o+=`<path d="M${x5} ${yR} L${x5} ${yT+e} L${x5-e} ${yT} L${x3} ${yT}" fill="none" style="stroke:var(--ink)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
-    o+=`<path d="M${x1} ${yR} L${x1} ${yB-e} L${x1+e} ${yB} L${W-m+24} ${yB}" fill="none" style="stroke:var(--blue)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
-    o+=`<path d="M${m-24} ${yR} L${W-m+24} ${yR}" fill="none" style="stroke:var(--red)" stroke-width="12" stroke-linecap="round"/>`;
-    o+=`<text x="${m-20}" y="${yR+40}" font-size="13" font-weight="700" style="fill:var(--red)">Tuyến tư duy</text><text x="${x1-14}" y="${(yR+yB)/2+5}" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--blue)">Tuyến mẫu</text>`;
-    o+=`<g class="stn" data-to="kiem-tra" tabindex="0" role="link" aria-label="Sang Quy hoạch động"><circle cx="${x3}" cy="${yT}" r="12" style="fill:var(--bg);stroke:var(--ink)" stroke-width="5"/><text x="${x3-20}" y="${yT-2}" text-anchor="end" font-weight="800" font-size="15" fill="currentColor">Sang Quy hoạch động</text><text x="${x3-20}" y="${yT+17}" text-anchor="end" font-size="13" fill="currentColor" opacity=".72">khi cây đệ quy có node trùng</text></g>`;
-    ST.forEach((t,i)=>{o+=stn(xs[i],yR,'var(--red)',t[0],t[1],t[2],'middle',xs[i],i===5?yR+36:yR-44,i===1||i===5)});
+    const m=70,s=(W-2*m)/5,yR=80,yB=220,yV=370,e=30,R=W-m;
+    const xs=ST.map((_,i)=>m+i*s),x1=xs[1];
+    const bEnd=R-80,b0=x1+e,bxs=PT.map((_,k)=>b0+(bEnd-40-b0)*(k+.6)/5);
+    const sv=(R-90-m)/5,vxs=VT.map((_,k)=>R-90-k*sv),xq=vxs[1];
+    o+=`<path d="M${xq} ${yV} L${xq} ${yV-70}" fill="none" style="stroke:var(--ink)" stroke-width="10" stroke-linecap="round"/>`;
+    o+=`<path d="M${R} ${yR} L${R} ${yV-e} L${R-e} ${yV} L${m} ${yV}" fill="none" style="stroke:var(--violet)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${x1} ${yR} L${x1} ${yB-e} L${x1+e} ${yB} L${bEnd} ${yB}" fill="none" style="stroke:var(--blue)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${m-24} ${yR} L${R} ${yR}" fill="none" style="stroke:var(--red)" stroke-width="12" stroke-linecap="round"/>`;
+    o+=`<text x="${m-20}" y="${yR+40}" font-size="13" font-weight="700" style="fill:var(--red)">Tuyến tư duy</text><text x="${x1-14}" y="${(yR+yB)/2+5}" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--blue)">Tuyến mẫu</text><text x="${R-16}" y="${(yR+yB)/2+5}" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--violet)">Tuyến nền móng</text>`;
+    ST.forEach((t,i)=>{o+=stn(xs[i],yR,'var(--red)',t[0],t[1],t[2],'middle',xs[i],yR-44,i===1||i===5)});
     PT.forEach((t,k)=>{o+=stn(bxs[k],yB,'var(--blue)',t[0],t[1],t[2],'middle',bxs[k],yB+38,false)});
+    VT.forEach((t,k)=>{o+=stn(vxs[k],yV,'var(--violet)',t[0],t[1],t[2],'middle',vxs[k],yV+38,k===1)});
+    o+=term(xq,yV-70,QL,'Sang Quay lui','bài 4: liệt kê, cắt tỉa','start',xq+22,yV-72);
+    o+=term(m,yV,QH,'Sang Quy hoạch động','khi bài con trùng','start',m-12,yV-44);
   }else{
-    const X0=26,top=24,sy=(H-2*top)/10,L=X0+34;const ys=[...Array(11)].map((_,i)=>top+i*sy);const y5=ys[5],y6=ys[6];
-    o+=`<path d="M${X0} ${ys[1]} L${X0+16} ${ys[1]+16} L${X0+16} ${(y5+y6)/2-8} L${X0} ${(y5+y6)/2+8} L${X0} ${ys[10]+10}" fill="none" style="stroke:var(--blue)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
-    o+=`<path d="M${X0} ${top-10} L${X0} ${y5}" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linecap="round"/>`;
-    ST.forEach((t,i)=>{o+=stn(X0,ys[i],'var(--red)',t[0],t[1],i===5?'node trùng → sang DP':t[2],'start',L,ys[i]-2,i===1||i===5)});
-    PT.forEach((t,k)=>{o+=stn(X0,ys[6+k],'var(--blue)',t[0],t[1],t[2],'start',L,ys[6+k]-2,false)});
+    const X0=26,top=24,NS=18,sy=(H-2*top)/(NS-1),L=X0+34;const ys=[...Array(NS)].map((_,i)=>top+i*sy);const ya=ys[12],yb=ys[13];
+    o+=`<path d="M${X0} ${ys[1]} L${X0+16} ${ys[1]+16} L${X0+16} ${(ya+yb)/2-8} L${X0} ${(ya+yb)/2+8} L${X0} ${ys[17]+10}" fill="none" style="stroke:var(--blue)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${X0} ${ys[10]} L${X0} ${ys[12]}" fill="none" style="stroke:var(--ink)" stroke-width="8" stroke-linecap="round"/>`;
+    o+=`<path d="M${X0} ${ys[5]} L${X0} ${ys[10]}" fill="none" style="stroke:var(--violet)" stroke-width="8" stroke-linecap="round"/>`;
+    o+=`<path d="M${X0} ${top-10} L${X0} ${ys[5]}" fill="none" style="stroke:var(--red)" stroke-width="8" stroke-linecap="round"/>`;
+    ST.forEach((t,i)=>{o+=stn(X0,ys[i],'var(--red)',t[0],t[1],t[2],'start',L,ys[i]-2,i===1||i===5)});
+    VT.forEach((t,k)=>{o+=stn(X0,ys[6+k],'var(--violet)',t[0],t[1],t[2],'start',L,ys[6+k]-2,k===1)});
+    o+=term(X0,ys[11],QL,'Sang Quay lui','bài 4: liệt kê, cắt tỉa','start',L,ys[11]-2)+term(X0,ys[12],QH,'Sang Quy hoạch động','khi bài con trùng','start',L,ys[12]-2);
+    PT.forEach((t,k)=>{o+=stn(X0,ys[13+k],'var(--blue)',t[0],t[1],t[2],'start',L,ys[13+k]-2,false)});
   }
   map.innerHTML=o;
 }
@@ -800,7 +1249,93 @@ stepper($('bt-ctl'),BS.length,t=>{
     else{const take=s.from.endsWith('1');say=take?`Lời gọi con trả về. <b>Hoàn tác</b>: <code>path.removeLast()</code> → ${fs(path)}, sạch như trước khi chọn.`:`Nhánh “bỏ ${NUMS[s.key.length]}” trả về, không có gì để hoàn tác. Tiếp theo: thử nhánh “lấy”.`}}
   $('bt-say').innerHTML=say;
 },{start:9});
+
+/* ---------- tuyến tím: tree renderer ---------- */
+function tog(id,cb){const g=$(id);g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));cb(b.dataset.m)})}
+function lay(root){let leaf=0,maxD=0;const all=[];(function go(n,d,p){n.d=d;n.par=p;all.push(n);if(d>maxD)maxD=d;if(!n.k.length){n.x=leaf++;return}n.k.forEach(c=>go(c,d+1,n));n.x=(n.k[0].x+n.k[n.k.length-1].x)/2})(root,0,null);return root._L={leaf,maxD,all}}
+function treeSVG(root,o){
+  const L=root._L||lay(root);const slot=o.slot||60,dy=o.dy||64,px=o.px||40,top=24;
+  const X=n=>px+n.x*slot,Y=n=>top+n.d*dy;const W=2*px+(L.leaf-1)*slot,H=top+26+L.maxD*dy;
+  const look=o.look||(n=>n.st||'');let e='',v='';
+  for(const n of L.all){if(!n.par)continue;const p=n.par,lk=look(n),gh=lk==='ghost',on=!!(o.on&&o.on(n)),el=o.el?o.el(n):n.el;
+    e+=`<line x1="${X(p)}" y1="${Y(p)+13}" x2="${X(n)}" y2="${Y(n)-13}" stroke-width="${on?5:2}"${gh?' stroke-dasharray="5 5"':''} style="stroke:${on?'var(--blue)':gh?'var(--mute)':'currentColor'}" stroke-opacity="${on?1:gh?.4:.5}"/>`;
+    if(el){const dx=X(n)-X(p),mx=(X(p)+X(n))/2,my=(Y(p)+Y(n))/2+4;e+=`<text x="${mx+(dx<-1?-5:5)}" y="${my}" text-anchor="${dx<-1?'end':'start'}" font-size="12" fill="currentColor" opacity="${gh?.45:.85}">${el}</text>`}}
+  for(const n of L.all){const lk=look(n),w=Math.max(28,n.lab.length*7.8+14),x=X(n),y=Y(n);
+    let f='var(--bg)',s='currentColor',t='currentColor',op=1,dash='',tn=false;
+    if(lk==='ans'){f=s='var(--green)';t='#fff';tn=true}
+    else if(lk==='dup'){f=s='var(--red)';t='#fff';tn=true}
+    else if(lk==='hl'){f=s='var(--blue)';t='#fff';tn=true}
+    else if(lk==='dead'){s='var(--red)';t='var(--red)';dash='4 3'}
+    else if(lk==='memo'){s='var(--green)';t='var(--green)';dash='4 3'}
+    else if(lk==='ghost'){s='var(--mute)';t='var(--mute)';op=.45;dash='4 4'}
+    v+=`<g opacity="${op}"><rect x="${x-w/2}" y="${y-13}" width="${w}" height="26" rx="8" stroke-width="2"${dash?` stroke-dasharray="${dash}"`:''} style="fill:${f};stroke:${s}"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="13" font-weight="600" style="fill:${t}${tn?';stroke:none':''}">${n.lab}</text></g>`;
+    if(o.tag){const tg=o.tag(n);if(tg)v+=`<text x="${x+w/2+3}" y="${y-10}" font-size="12.5" font-weight="800" style="fill:${tg.c||'var(--blue)'}">${tg.t}</text>`}}
+  return `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px;min-width:${Math.min(W,o.minW||480)}px" role="img" aria-label="${o.aria||'Cây lời gọi'}">${e}${v}</svg>`;
+}
+const stairs=n=>(function b(i,s,path){const nd={i,s,path,lab:String(i),el:s?'+'+s:'',k:[]};for(const t of[1,2])if(i+t<=n)nd.k.push(b(i+t,t,[...path,t]));return nd})(0,0,[]);
+
+/* ---------- theo lựa chọn: one tree, four questions ---------- */
+const SN=5,COST=[0,4,1,3,2,5],BROKEN=2;
+const CT=stairs(SN);lay(CT);
+(function post(n){n.k.forEach(post);n.w=n.i===SN?1:n.k.reduce((a,c)=>a+c.w,0);n.b=n.i===SN?0:Math.min(...n.k.map(c=>COST[c.i]+c.b))})(CT);
+const canSeen=new Set(),canPath=new Set();
+(function sim(n){canSeen.add(n);let r=false;if(n.i===BROKEN)r=false;else if(n.i===SN)r=true;else{for(const c of n.k)if(sim(c)){r=true;break}}n.cv=r;if(r)canPath.add(n);return r})(CT);
+const bestPath=new Set();(function f(n){bestPath.add(n);if(!n.k.length)return;f(n.k.reduce((a,c)=>COST[c.i]+c.b<COST[a.i]+a.b?c:a))})(CT);
+function drawChoice(m){
+  let look=n=>n.i===SN?'ans':'',tag=null,on=null,el=null,eq='',say='';
+  if(m==='list'){eq='list(i): tới đích thì ghi path; không gộp gì';say=`Có <b>${CT.w}</b> đường. Mỗi lá xanh là một đáp án, và hàm phải đi tới từng lá để in nó ra. Số đường tăng theo dãy Fibonacci khi n tăng.`}
+  else if(m==='count'){tag=n=>({t:String(n.w),c:n.i===SN?'var(--green)':'var(--blue)'});eq='count(i) = count(i+1) + count(i+2)      count(5) = 1';say=`Mỗi node trả lên tổng của các con; lá đích trả 1. Gốc nhận <b>${CT.w}</b> mà không cần biết từng đường là gì. Để ý: mọi node cùng nhãn đều trả lên cùng một số.`}
+  else if(m==='best'){tag=n=>({t:String(n.b)});el=n=>n.par?`phí ${COST[n.i]}`:'';on=n=>!!n.par&&bestPath.has(n)&&bestPath.has(n.par);eq='best(i) = min(cost[i+1] + best(i+1), cost[i+2] + best(i+2))      best(5) = 0<br>phí của bậc 1 … 5: 4, 1, 3, 2, 5';say=`Mỗi cạnh ghi phí của bậc vừa bước lên; mỗi node chọn lựa chọn có (phí + best của con) nhỏ nhất. Gốc nhận <b>${CT.b}</b>, theo đường 0 → 2 → 4 → 5 (1 + 2 + 5).`}
+  else{look=n=>!canSeen.has(n)?'ghost':n.i===BROKEN?'dead':n.i===SN?'ans':'';tag=n=>canSeen.has(n)?{t:n.cv?'true':'false',c:n.cv?'var(--green)':'var(--red)'}:null;on=n=>!!n.par&&canPath.has(n)&&canPath.has(n.par);eq='can(i) = can(i+1) || can(i+2)      bậc 2 hỏng → false      can(5) = true';say='Bậc 2 hỏng nên mọi node 2 trả false ngay, không đi tiếp. Đường đầu tiên tới đích là 0 → 1 → 3 → 4 → 5. Ngay khi nhận true, mỗi node trả lên luôn: các nhánh mờ không bao giờ được gọi.'}
+  $('lc-eq').innerHTML=eq;
+  $('lc-tree').innerHTML=treeSVG(CT,{slot:64,dy:66,px:44,minW:540,look,tag,on,el,aria:'Cây quyết định của cầu thang 5 bậc'});
+  $('lc-reswrap').hidden=m!=='list';
+  if(m==='list')$('lc-res').innerHTML=CT._L.all.filter(n=>n.i===SN).map(n=>`<span class="r">${n.path.join(' + ')}</span>`).join('');
+  $('lc-say').innerHTML=say;
+}
+tog('lc-mode',drawChoice);drawChoice('list');
+
+/* ---------- bài con trùng: memo shrinks the tree ---------- */
+function oTree(n){const seen=new Set();const root=(function b(i){const nd={i,lab:String(i),el:'',k:[]};nd.rep=i!==n&&seen.has(i);seen.add(i);for(const s of[1,2])if(i+s<=n)nd.k.push(b(i+s));return nd})(0);lay(root);
+  (function mark(x,under){x.under=under;x.k.forEach(c=>mark(c,under||x.rep))})(root,false);return root}
+const OT={};let oN=6,oMemo=false;
+function drawOverlap(){const n=oN,T=OT[n]||(OT[n]=oTree(n)),all=T._L.all;
+  const cnt=Array(n+1).fill(0),live=Array(n+1).fill(0),hits=Array(n+1).fill(0);
+  for(const x of all){cnt[x.i]++;if(!x.under){live[x.i]++;if(x.rep)hits[x.i]++}}
+  const calls=all.filter(x=>!x.under).length,totalHits=hits.reduce((a,b)=>a+b,0);
+  const look=x=>oMemo?(x.under?'ghost':x.rep?'memo':x.i===n?'ans':''):(x.i===n?'ans':x.rep?'dup':'');
+  $('on-tree').innerHTML=treeSVG(T,{slot:n===5?46:n===6?38:32,dy:54,px:24,minW:520,look,aria:`Cây lời gọi ways(0) với n = ${n}`});
+  $('on-stat').innerHTML=oMemo?`<span><b>${calls}</b>lời gọi</span><span><b>${totalHits}</b>lần lấy từ memo</span><span><b>${n+1}</b>câu hỏi khác nhau</span>`:`<span><b>${all.length}</b>lời gọi</span><span><b>${n+1}</b>câu hỏi khác nhau</span>`;
+  const mx=Math.max(...cnt);
+  $('on-bars').innerHTML=cnt.map((c,i)=>{const v=oMemo?live[i]:c;const lab=i===n?`${v} lần · điểm dừng`:oMemo?(hits[i]?`1 tính + ${hits[i]} nhớ`:'1 lần tính'):`${c} lần`;return `<div class="row"><span>ways(${i})</span><span class="trk"><span class="fill${oMemo?' ok':''}" style="display:block;width:${v/mx*100}%"></span></span><span class="num">${lab}</span></div>`}).join('');
+  let km=0;for(let i=0;i<n;i++)if(cnt[i]>cnt[km])km=i;
+  $('on-say').innerHTML=oMemo?`Lần đầu gặp <code>ways(i)</code> thì tính và ghi vào memo; mỗi lần sau (viền xanh đứt) trả ngay, và cả cây con bên dưới nó (mờ) không còn được gọi. Còn <b>${calls}</b> lời gọi, cỡ 2n: thời gian O(n).`
+    :`<b>${all.length}</b> lời gọi cho chỉ ${n+1} câu hỏi khác nhau. Node đỏ là câu hỏi đã từng được hỏi ở một nhánh bên trái; <code>ways(${km})</code> bị hỏi tới ${cnt[km]} lần.`;
+}
+tog('on-n',m=>{oN=Number(m);drawOverlap()});tog('on-memo',m=>{oMemo=m==='on';drawOverlap()});drawOverlap();
+
+/* ---------- không gian: tree folds into a DAG ---------- */
+$('kg-tree').innerHTML=treeSVG(oTree(5),{slot:40,dy:52,px:22,minW:340,look:x=>x.i===3?'hl':x.i===5?'ans':'',aria:'Cây lời gọi ways(0) với n = 5; ba node ways(3) tô xanh'});
+(function(){const n=5,g=64,X=i=>32+i*g,Y=100;let o='<defs><marker id="ahD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>';
+  for(let i=0;i<n;i++){o+=`<line x1="${X(i)+17}" y1="${Y}" x2="${X(i+1)-19}" y2="${Y}" stroke-width="2" stroke="currentColor" stroke-opacity=".6" marker-end="url(#ahD)"/>`;
+    if(i+2<=n){const up=i%2===0,cy=up?Y-62:Y+62;o+=`<path d="M${X(i)+6} ${up?Y-14:Y+14} Q${X(i+1)} ${cy} ${X(i+2)-8} ${up?Y-16:Y+16}" fill="none" stroke-width="2" stroke="currentColor" stroke-opacity=".6" marker-end="url(#ahD)"/>`}}
+  for(let i=0;i<=n;i++){const hl=i===3,end=i===n,c=hl?'var(--blue)':end?'var(--green)':null;o+=`<circle cx="${X(i)}" cy="${Y}" r="16" stroke-width="2.5" style="fill:${c||'var(--bg)'};stroke:${c||'var(--ink)'}"/><text x="${X(i)}" y="${Y+5}" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="14" font-weight="700" style="fill:${c?'#fff':'currentColor'}${c?';stroke:none':''}">${i}</text>`}
+  $('kg-dag').innerHTML=`<svg viewBox="0 0 ${X(n)+32} 200" style="min-width:300px;max-width:420px" role="img" aria-label="Đồ thị 6 node từ 0 tới 5, mỗi node i có cạnh tới i+1 và i+2">${o}</svg>`})();
+
+/* ---------- khử đệ quy: fill the table right to left ---------- */
+const BN=6,DPV=[13,8,5,3,2,1,1,0];
+stepper($('bu-ctl'),BN,t=>{
+  const cur=t?BN-t:null,filled=i=>i>=BN||(cur!==null&&i>=cur);
+  const X=i=>16+i*70,Y=70,w=60,h=52;let o='<defs><marker id="ahB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--blue)"/></marker></defs>';
+  for(let i=0;i<=BN+1;i++){const f=filled(i),isC=i===cur,rd=cur!==null&&(i===cur+1||i===cur+2);
+    o+=`<rect x="${X(i)}" y="${Y}" width="${w}" height="${h}" rx="8" stroke-width="${rd?4:2}"${f?'':' stroke-dasharray="5 4"'} style="fill:${isC?'var(--amber)':f?'var(--bg)':'var(--soft)'};stroke:${isC?'var(--amber)':rd?'var(--blue)':f?'var(--ink)':'var(--line)'}"/>`;
+    o+=`<text x="${X(i)+w/2}" y="${Y+33}" text-anchor="middle" font-size="22" font-weight="800" style="fill:${isC?'#111':f?'currentColor':'var(--mute)'}${isC?';stroke:none':''}">${f?DPV[i]:'?'}</text>`;
+    o+=`<text x="${X(i)+w/2}" y="${Y+h+20}" text-anchor="middle" font-family="Roboto Mono,monospace" font-size="13" fill="currentColor" opacity=".8">dp[${i}]</text>`}
+  o+=`<text x="${X(BN+1)+w/2}" y="${Y+h+38}" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7">bước quá</text><text x="${X(BN)+w/2}" y="${Y+h+38}" text-anchor="middle" font-size="12" font-weight="700" style="fill:var(--green)">đích</text>`;
+  if(cur!==null)for(const r of[cur+1,cur+2]){const x1=X(r)+w/2,x2=X(cur)+w/2+(r===cur+1?6:-6);o+=`<path d="M${x1} ${Y-4} Q${(x1+x2)/2} ${Y-(r-cur)*26} ${x2} ${Y-6}" fill="none" stroke-width="2.5" style="stroke:var(--blue)" marker-end="url(#ahB)"/>`}
+  $('bu-svg').innerHTML=`<svg viewBox="0 0 ${X(BN+1)+w+16} ${Y+h+46}" style="min-width:520px;max-width:620px" role="img" aria-label="Bảng dp từ 0 tới 7 được điền từ phải sang trái">${o}</svg>`;
+  $('bu-say').innerHTML=cur===null?'Khởi đầu từ điểm dừng: <code>dp[6] = 1</code> (đứng ở đích là một cách), <code>dp[7] = 0</code> (bước quá đích). Bấm “Bước tiếp” để điền ô tiếp theo.'
+    :`<code>dp[${cur}] = dp[${cur+1}] + dp[${cur+2}] = ${DPV[cur+1]} + ${DPV[cur+2]} = ${DPV[cur]}</code>. Hai ô nó cần đã có sẵn, vì vòng lặp đi từ phải sang trái.`+(cur===0?` Ô cuối cùng là đáp án: <b>${DPV[0]}</b> cách lên 6 bậc.`:'');
+},{start:2});
 }
 </script>
-</body>
-</html>
